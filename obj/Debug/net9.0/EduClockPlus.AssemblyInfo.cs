@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EduClockPlus")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4388f5ca8ba2455eddd6375d5d881d67e6898e68")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb2a9207b059a67d5986e35820797a6efe8b2ca2")]
 [assembly: System.Reflection.AssemblyProductAttribute("EduClockPlus")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EduClockPlus")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

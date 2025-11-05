@@ -1,0 +1,111 @@
+# =========================================
+# Visual Studio & ASP.NET Core Git Ignore
+# Project: EduClockPlus
+# =========================================
+
+## Ignore build results
+bin/
+obj/
+out/
+Debug/
+Release/
+x64/
+x86/
+*.dll
+*.exe
+*.pdb
+*.log
+
+# Rider / VS Code specific
+.idea/
+.vscode/
+*.code-workspace
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Publish output
+wwwroot/dist/
+wwwroot/node_modules/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log
+*.vspscc
+
+# Database files
+*.db
+*.sqlite
+*.mdf
+*.ldf
+
+# Sensitive configuration
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+secrets.json
+
+# Backups
+*.bak
+*.orig
+*.rej
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Entity Framework Migrations temporary files
+Migrations/obj/
+Migrations/bin/
+
+# OS generated files
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# JetBrains Rider
+.idea/
+
+# WakaTime / HackaTime cache
+.wakatime.cfg
+.hackatime/
+hackatime.json
+
+# VS related folders
+.vs/
+_ReSharper*/
+[Tt]est[Rr]esult*/
+*.ncrunchsolution
+*.ncrunchproject
+*.Cache
+*.dbmdl
+
+# Backup of config files
+*.bak
+*.tmp
+*.swp
+
+# Custom EduClockPlus images & uploads (optional)
+wwwroot/images/students/
+wwwroot/images/temp/
+
+# =========================================
+# END
+# =========================================
