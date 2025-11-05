@@ -16,7 +16,6 @@ namespace EduClockPlus.Controllers
             _emailService = emailService;
         }
 
-        // ✅ Dashboard for Parent
         public IActionResult Dashboard()
         {
             var email = HttpContext.Session.GetString("UserEmail");
@@ -36,7 +35,6 @@ namespace EduClockPlus.Controllers
             return View();
         }
 
-        // ✅ Student Details under parent
         public IActionResult StudentDetails(Guid id)
         {
             var student = _context.Students
@@ -50,7 +48,6 @@ namespace EduClockPlus.Controllers
             return View(student);
         }
 
-        // ✅ Send feedback to teacher
         [HttpPost]
         public async Task<IActionResult> SendFeedback(Guid teacherId, string message)
         {
@@ -64,7 +61,6 @@ namespace EduClockPlus.Controllers
                 return RedirectToAction("Dashboard");
             }
 
-            // Send email feedback to teacher
             await _emailService.SendEmailAsync(
                 teacher.Email!,
                 "Parent Feedback",

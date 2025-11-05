@@ -46,7 +46,6 @@ namespace ClassClockPlus.Controllers
             return View();
         }
 
-
         [HttpGet]
         public IActionResult AddTeacher()
         {
@@ -68,7 +67,7 @@ namespace ClassClockPlus.Controllers
                 UserID = Guid.NewGuid(),
                 FullName = FullName,
                 Email = Email,
-                PasswordHash = Password, // Hash this in real app
+                PasswordHash = Password,
                 Role = "Teacher"
             };
 
