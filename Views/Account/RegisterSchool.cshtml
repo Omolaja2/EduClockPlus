@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Register School - EduClockPlus";
+}
+
+<div class="d-flex align-items-center justify-content-center vh-100 bg-light">
+    <div class="card shadow-lg p-4" style="max-width: 600px; width: 100%;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-primary">Register Your School</h3>
+            <p class="text-muted">Create a new school account for EduClockPlus</p>
+        </div>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+        <strong>@TempData["Success"]</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+
+        <form asp-action="RegisterSchool" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">School Name</label>
+                <input type="text" name="schoolName" class="form-control" placeholder="e.g. Mamun High School" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Address</label>
+                <input type="text" name="address" class="form-control" placeholder="School address" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">School Email</label>
+                <input type="email" name="email" class="form-control" placeholder="e.g. info@school.com" />
+            </div>
+
+
+            <hr />
+
+            <h5 class="fw-bold mt-3 mb-3 text-primary">Admin Details</h5>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Admin Full Name</label>
+                <input type="text" name="adminName" class="form-control" placeholder="e.g. Mr. Omolaja" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Admin Email</label>
+                <input type="email" name="adminEmail" class="form-control" placeholder="e.g. principal@school.com" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Admin Password</label>
+                <input type="password" name="adminPassword" class="form-control" placeholder="Enter a strong password" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 fw-bold">Register School</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="/Account/Login" class="text-decoration-none small text-secondary">
+                Already registered? Login here
+            </a>
+        </div>
+    </div>
+</div>

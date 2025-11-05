@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Login - EduClockPlus";
+}
+
+<div class="d-flex align-items-center justify-content-center vh-100 bg-light">
+    <div class="card shadow-lg p-4 border-0" style="max-width: 420px; width: 100%; border-radius: 15px;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-primary">EduClockPlus</h3>
+            <p class="text-muted">Sign in to your account</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger text-center">@ViewBag.Error</div>
+        }
+
+        <form asp-action="Login" method="post">
+            <!-- Role Selection -->
+            <div class="mb-3">
+                <label for="role" class="form-label fw-semibold">Select Role</label>
+                <select id="role" name="role" class="form-select" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="Admin">Admin (Principal)</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Parent">Parent</option>
+                </select>
+            </div>
+
+            <!-- Username / Email -->
+            <div class="mb-3">
+                <label for="username" class="form-label fw-semibold">Username or Email</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username or email" required />
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <label for="password" class="form-label fw-semibold">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required />
+            </div>
+
+            <!-- Login Button -->
+            <button type="submit" class="btn btn-primary w-100 fw-bold mt-2">Login</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="/" class="text-decoration-none small text-secondary">
+                ← Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">

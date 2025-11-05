@@ -1,0 +1,29 @@
+@model ClassClockPlus.Models.Student
+@{
+    ViewData["Title"] = "Student Details";
+}
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <img src="@Model.ImagePath" class="rounded-circle me-3" width="100" height="100" />
+                <div>
+                    <h4>@Model.FullName (@Model.Gender)</h4>
+                    <p class="text-muted">Class: @Model.ClassName | Teacher: @Model.Teacher.FullName</p>
+                </div>
+            </div>
+            <hr />
+            <h5>Parent Information</h5>
+            <p><strong>Name:</strong> @Model.Parent.User.FullName</p>
+            <p><strong>Email:</strong> @Model.Parent.User.Email</p>
+            <p><strong>Phone:</strong> @Model.Parent.Phone</p>
+
+            <hr />
+            <form asp-action="ClockOut" asp-route-id="@Model.StudentID" method="post">
+                <button class="btn btn-danger" type="submit">
+                    <i class="bi bi-door-open"></i> Clock Out Student
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

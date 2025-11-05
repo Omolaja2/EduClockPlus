@@ -1,0 +1,111 @@
+@{
+    ViewData["Title"] = "Parent Dashboard";
+    var parent = ViewBag.Parent as dynamic;
+    var children = ViewBag.Children as IEnumerable<dynamic>;
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold">Welcome, @parent?.FullName 👋</h2>
+            <p class="text-muted mb-0">Monitor your children’s progress, attendance, and updates here.</p>
+        </div>
+
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="bi bi-box-arrow-right me-1"></i> Logout
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-people display-5 text-primary"></i>
+                    <h5 class="fw-bold mt-2">Children Enrolled</h5>
+                    <p class="fs-4 text-dark fw-semibold mb-0">@children?.Count() ?? 0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-book display-5 text-success"></i>
+                    <h5 class="fw-bold mt-2">Subjects Monitored</h5>
+                    <p class="fs-4 text-dark fw-semibold mb-0">@((children != null) ? children.Sum(c => (int?)c.SubjectCount ?? 0) : 0)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-chat-left-dots display-5 text-warning"></i>
+                    <h5 class="fw-bold mt-2">Messages / Alerts</h5>
+                    <p class="fs-4 text-dark fw-semibold mb-0">5</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Children Table -->
+    <h4 class="fw-bold mb-3">Your Children</h4>
+    @if (children != null && children.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Child Name</th>
+                        <th>Class</th>
+                        <th>Performance</th>
+                        <th>Attendance</th>
+                        <th>Teacher</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var child in children)
+                    {
+                        <tr>
+                            <td>@child.FullName</td>
+                            <td>@child.ClassName</td>
+                            <td>
+                                <span class="badge bg-info text-dark">
+                                    @(child.Performance ?? "Good")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width:@(child.Attendance ?? 85)%"></div>
+                                </div>
+                                <small class="text-muted">@child.Attendance% Present</small>
+                            </td>
+                            <td>@(child.TeacherName ?? "-")</td>
+                            <td>
+                                @if ((child.Status ?? "Active") == "Active")
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">No child records found yet.</p>
+    }
+
+    <!-- Footer -->
+    <p class="text-center text-muted mt-5">
+        <small>© 2025 ClassClockPlus — Parent Portal</small>
+    </p>
+</div>
