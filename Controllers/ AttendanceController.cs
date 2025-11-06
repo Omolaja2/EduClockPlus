@@ -16,8 +16,6 @@ namespace EduClockPlus.Controllers
             _context = context;
             _emailService = emailService;
         }
-
-        // ✅ View attendance list
         public IActionResult Index()
         {
             var records = _context.Attendance
@@ -30,7 +28,6 @@ namespace EduClockPlus.Controllers
             return View(records);
         }
 
-        // ✅ Mark attendance (GET)
         [HttpGet]
         public IActionResult Mark()
         {
@@ -40,9 +37,7 @@ namespace EduClockPlus.Controllers
 
             ViewBag.Students = students;
             return View();
-        }
-
-        // ✅ Mark attendance (POST)
+        }  
         [HttpPost]
         public async Task<IActionResult> Mark(Guid studentId, bool isPresent)
         {
@@ -67,7 +62,6 @@ namespace EduClockPlus.Controllers
             _context.Attendance.Add(record);
             await _context.SaveChangesAsync();
 
-            // ✅ Send notification email to parent
             string status = isPresent ? "present" : "absent";
             string message = $@"
                 Dear {student.Parent.User!.FullName},<br/>

@@ -6,7 +6,6 @@ namespace EduClockPlus.Models.DB
     public class EduclockDbContext : DbContext
     {
         public EduclockDbContext(DbContextOptions<EduclockDbContext> options) : base(options) { }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Teacher> Teachers { get; set; }

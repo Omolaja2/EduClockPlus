@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using EduClockPlus.Models.DB;
 using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Services;
-
+using ClassClockPlus.Models;
 namespace EduClockPlus.Controllers
 {
     public class ParentController : Controller
@@ -16,7 +16,51 @@ namespace EduClockPlus.Controllers
             _emailService = emailService;
         }
 
-        // ✅ Dashboard for Parent
+        [HttpGet]
+        public IActionResult Add()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Add(string fullName, string email, string phone, string password)
+        {
+            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                ViewBag.Error = "All fields are required.";
+                return View();
+            }
+            // // Check for duplicate email
+            // if (_context.Users.Any(u => u.Email == email))
+            // {
+            //     ViewBag.Error = "A user with this email already exists.";
+            //     return View();
+            // }
+            var user = new User
+            {
+                UserID = Guid.NewGuid(),
+                FullName = fullName,
+                Email = email,
+                PasswordHash = password,
+                Role = "Parent"
+            };
+
+            var parent = new Parent
+            {
+                ParentID = Guid.NewGuid(),
+                UserID = user.UserID,
+                User = user,
+                Phone = phone
+            };
+
+            _context.Users.Add(user);
+            _context.Parents.Add(parent);
+            _context.SaveChanges();
+
+            TempData["Success"] = "Parent added successfully!";
+            return RedirectToAction("Dashboard", "Admin");
+        }
+
         public IActionResult Dashboard()
         {
             var email = HttpContext.Session.GetString("UserEmail");
@@ -36,7 +80,6 @@ namespace EduClockPlus.Controllers
             return View();
         }
 
-        // ✅ Student Details under parent
         public IActionResult StudentDetails(Guid id)
         {
             var student = _context.Students
@@ -50,7 +93,6 @@ namespace EduClockPlus.Controllers
             return View(student);
         }
 
-        // ✅ Send feedback to teacher
         [HttpPost]
         public async Task<IActionResult> SendFeedback(Guid teacherId, string message)
         {
@@ -64,7 +106,6 @@ namespace EduClockPlus.Controllers
                 return RedirectToAction("Dashboard");
             }
 
-            // Send email feedback to teacher
             await _emailService.SendEmailAsync(
                 teacher.Email!,
                 "Parent Feedback",

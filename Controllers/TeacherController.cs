@@ -1,103 +1,153 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
 using ClassClockPlus.Models;
-using EduClockPlus.Services;
 
 namespace EduClockPlus.Controllers
 {
     public class TeacherController : Controller
     {
         private readonly EduclockDbContext _context;
-        private readonly EmailService _emailService;
 
-        public TeacherController(EduclockDbContext context, EmailService emailService)
+        public TeacherController(EduclockDbContext context)
         {
             _context = context;
-            _emailService = emailService;
         }
 
-        // ✅ Show Add Teacher form
-        public IActionResult Add() => View();
-
-        // ✅ Handle Add Teacher Post Request
-        [HttpPost]
-        public async Task<IActionResult> Add(
-            string fullName,
-            string email,
-            string phoneNumber,
-            string className,
-            string subject,
-            string password,
-            Guid schoolId)
+        public IActionResult Dashboard()
         {
-            if (string.IsNullOrWhiteSpace(fullName) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
+            string currentTeacherEmail = HttpContext.Session.GetString("UserEmail")!;
+            var teacher = _context.Teachers.FirstOrDefault(t => t.Email == currentTeacherEmail);
+
+            if (teacher == null)
             {
-                ViewBag.Error = "All required fields must be filled.";
-                return View();
+                ViewBag.Error = "Teacher not found. Please log in again.";
+                return View("Error");
             }
 
-            // Check if email already exists
-            if (_context.Users.Any(u => u.Email == email))
+
+            var students = _context.Students
+                .Where(s => s.TeacherID == teacher.TeacherID)
+                .Include(s => s.Parent)
+                .ThenInclude(p => p.User)
+                .ToList();
+            var parents = _context.Parents.Include(p => p.User).ToList();
+
+            ViewBag.Teacher = teacher;
+            ViewBag.Students = students;
+            ViewBag.Parents = parents;
+            return View();
+        }
+        [HttpPost]
+        public IActionResult SaveStudent([FromBody] StudentDto dto)
+        {
+            var teacherEmail = HttpContext.Session.GetString("UserEmail");
+            var teacher = _context.Teachers.FirstOrDefault(t => t.Email == teacherEmail);
+
+            if (teacher == null)
+                return Json(new { success = false, message = "Teacher not found." });
+
+            var student = new Student
             {
-                ViewBag.Error = "A user with this email already exists.";
+                StudentID = Guid.NewGuid(),
+                FullName = dto.StudentName,
+                ClassName = dto.Grade,
+                TeacherID = teacher.TeacherID,
+                ParentID = dto.ParentId
+            };
+            _context.Students.Add(student);
+            _context.SaveChanges();
+
+            var parent = _context.Parents.Include(p => p.User).FirstOrDefault(p => p.ParentID == dto.ParentId);
+
+            return Json(new
+            {
+                success = true,
+                student = new
+                {
+                    student.StudentID,
+                    fullName = student.FullName,
+                    grade = student.ClassName,
+                    parentName = parent?.User?.FullName,
+                    parentEmail = parent?.User?.Email
+                }
+            });
+
+        }
+
+        [HttpGet]
+        public IActionResult GetStudentDetails(Guid studentId)
+        {
+            var student = _context.Students
+                .Include(s => s.Parent)
+                .ThenInclude(p => p.User)
+                .FirstOrDefault(s => s.StudentID == studentId);
+
+            if (student == null)
+                return Json(new { success = false, message = "Student not found." });
+
+            return Json(new
+            {
+                success = true,
+                student = new
+                {
+                    fullName = student.FullName,
+                    grade = student.ClassName,
+                    parentName = student.Parent?.User?.FullName,
+                    parentEmail = student.Parent?.User?.Email
+                }
+            });
+        }
+
+        [HttpGet]
+        public IActionResult Add()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Add(string FullName, string Email, string Password, string? PhoneNumber, string? ClassName, string? Subject)
+        {
+            if (string.IsNullOrEmpty(FullName) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+            {
+                ViewBag.Error = "Please fill in all required fields.";
                 return View();
             }
-
-            // ✅ Step 1: Create the User account
-            var newUser = new User
+            var user = new User
             {
                 UserID = Guid.NewGuid(),
-                FullName = fullName,
-                Email = email,
-                PasswordHash = password, // You can hash later
-                Role = "Teacher",
-                SchoolId = (int)schoolId.GetHashCode()
+                FullName = FullName,
+                Email = Email,
+                PasswordHash = Password,
+                Role = "Teacher"
             };
 
-            _context.Users.Add(newUser);
-            _context.SaveChanges();
-
-            // ✅ Step 2: Create Teacher record
-            var newTeacher = new Teacher
+            var teacher = new Teacher
             {
                 TeacherID = Guid.NewGuid(),
-                UserID = newUser.UserID,
-                FullName = fullName,
-                Email = email,
-                PhoneNumber = phoneNumber,
-                ClassName = className,
-                Subject = subject
+                UserID = user.UserID,
+                User = user,
+                FullName = FullName,
+                Email = Email,
+                PhoneNumber = PhoneNumber,
+                ClassName = ClassName,
+                Subject = Subject
             };
 
-            _context.Teachers.Add(newTeacher);
+            _context.Users.Add(user);
+            _context.Teachers.Add(teacher);
             _context.SaveChanges();
 
-            // ✅ Step 3: Send welcome email
-            try
-            {
-                string subjectLine = $"Welcome to EduClockPlus, {fullName}!";
-                string body = $@"
-                    <h2>Welcome to EduClockPlus 🎓</h2>
-                    <p>Dear {fullName},</p>
-                    <p>Your teacher account has been created successfully.</p>
-                    <p><strong>Login Email:</strong> {email}</p>
-                    <p><strong>Password:</strong> {password}</p>
-                    <p>You can now log in to your teacher dashboard.</p>
-                    <p><a href='{Request.Scheme}://{Request.Host}/Account/Login' style='color:#007bff;'>Go to Login Page</a></p>
-                    <br/>
-                    <p>– The EduClockPlus Team</p>";
 
-                await _emailService.SendEmailAsync(email, subjectLine, body);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Email sending failed: {ex.Message}");
-            }
-
-            TempData["Success"] = "Teacher added successfully and welcome email sent!";
-            return RedirectToAction("Dashboard", "Admin");
+            TempData["Success"] = "Teacher added successfully!";
+            return RedirectToAction("Dashboard");
         }
+        
+    }
+    public class StudentDto
+    {
+        public string StudentName { get; set; } = default!;
+        public string Grade { get; set; } = default!;
+        public Guid ParentId { get; set; }
     }
 }

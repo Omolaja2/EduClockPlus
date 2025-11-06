@@ -1,0 +1,173 @@
+@{
+    var students = ViewBag.Students as IEnumerable<dynamic>;
+    var parents = ViewBag.Parents as IEnumerable<dynamic>;
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">Teacher Dashboard</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students</h5>
+                    <p class="fs-3">@students?.Count() ?? 0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Parents</h5>
+                    <p class="fs-3">@parents?.Count() ?? 0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Average Attendance</h5>
+                    @{
+                        var avgAttendance = students?.Any() == true ? 
+                                            students.Average(s => (int?)s.Attendance ?? 0) : 0;
+                    }
+                    <p class="fs-3">@avgAttendance.ToString("0")%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="studentForm" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Student Name</label>
+                <input type="text" id="studentName" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Grade</label>
+                <input type="text" id="grade" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Parent</label>
+                <select id="parentId" class="form-select" required>
+                    <option value="">Select Parent</option>
+                    @foreach (var p in parents!)
+                    {
+                        <option value="@p.ParentID">@p.User.FullName (@p.User.Email)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Save Student</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-hover table-bordered" id="studentsTable">
+        <thead class="table-dark">
+            <tr>
+                <th>Student Name</th>
+                <th>Grade</th>
+                <th>Parent</th>
+                <th>Attendance</th>
+                <th>Performance</th>
+                <th>Subjects</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in students!)
+            {
+                <tr data-id="@s.StudentID" style="cursor:pointer;">
+                    <td>@s.FullName</td>
+                    <td>@s.ClassName</td>
+                    <td>@(s.Parent?.User?.FullName ?? "N/A")</td>
+                    <td>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width:@(s.Attendance ?? 0)%"></div>
+                        </div>
+                        <small class="text-muted">@s.Attendance ?? 0% Present</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-info text-dark">@s.Performance ?? "Good"</span>
+                    </td>
+                    <td>@s.Subjects ?? "-" </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* <!-- Detailed Student Info --> *@
+    <div id="studentDetails" class="alert alert-info mt-4" style="display:none;"></div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById("studentForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const data = {
+        studentName: document.getElementById("studentName").value.trim(),
+        grade: document.getElementById("grade").value.trim(),
+        parentId: document.getElementById("parentId").value
+    };
+
+    if (!data.studentName || !data.grade || !data.parentId) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    fetch('/Teacher/SaveStudent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            const s = res.student;
+            const row = `
+                <tr data-id="${s.studentID}" style="cursor:pointer;">
+                    <td>${s.fullName}</td>
+                    <td>${s.grade}</td>
+                    <td>${s.parentName || "N/A"}</td>
+                    <td>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width:85%"></div>
+                        </div>
+                        <small class="text-muted">85% Present</small>
+                    </td>
+                    <td><span class="badge bg-info text-dark">Good</span></td>
+                    <td>-</td>
+                </tr>`;
+            document.querySelector("#studentsTable tbody").insertAdjacentHTML("beforeend", row);
+            document.getElementById("studentForm").reset();
+        } else {
+            alert(res.message);
+        }
+    })
+    .catch(() => alert("Error saving student."));
+});
+
+document.querySelector("#studentsTable").addEventListener("click", function (e) {
+    const row = e.target.closest("tr");
+    if (!row) return;
+
+    const studentId = row.dataset.id;
+    fetch(`/Teacher/GetStudentDetails?studentId=${studentId}`)
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                const s = res.student;
+                const html = `
+                    <strong>Student:</strong> ${s.fullName}<br>
+                    <strong>Grade:</strong> ${s.grade}<br>
+                    <strong>Parent:</strong> ${s.parentName} (${s.parentEmail})
+                `;
+                const detailsDiv = document.getElementById("studentDetails");
+                detailsDiv.innerHTML = html;
+                detailsDiv.style.display = 'block';
+            }
+        });
+});
+</script>
+}

@@ -9,6 +9,5 @@ namespace EduClockPlus.Models
         public string Address { get; set; }  = default!;
         public string Email { get; set; }  = default!;
         public ICollection<User> Users { get; set; }  = default!;
-
     }
 }

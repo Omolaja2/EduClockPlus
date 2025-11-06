@@ -130,6 +130,9 @@ namespace EduClockPlus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<int>("Attendance")
+                        .HasColumnType("int");
+
                     b.Property<string>("ClassName")
                         .HasColumnType("longtext");
 
@@ -151,6 +154,12 @@ namespace EduClockPlus.Migrations
 
                     b.Property<Guid>("ParentID")
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Performance")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Subjects")
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("TeacherID")
                         .HasColumnType("char(36)");
