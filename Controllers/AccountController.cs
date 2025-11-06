@@ -3,7 +3,6 @@ using EduClockPlus.Models.DB;
 using ClassClockPlus.Models;
 using EduClockPlus.Models;
 using EduClockPlus.Services;
-
 namespace EduClockPlus.Controllers
 {
     public class AccountController : Controller
@@ -16,7 +15,6 @@ namespace EduClockPlus.Controllers
             _context = context;
             _emailservice = emailService;
         }
-
         public IActionResult Login() => View();
 
         [HttpPost]
@@ -28,19 +26,6 @@ namespace EduClockPlus.Controllers
                 return View();
             }
 
-            if (role == "Admin")
-            {
-                var admin = _context.Users.FirstOrDefault(u => u.Email == username && u.PasswordHash == password && u.Role == "Admin");
-                if (admin != null)
-                {
-                    return RedirectToAction("Dashboard", "Admin");
-                }
-
-                ViewBag.Error = "Invalid Admin credentials.";
-                return View();
-            }
-
-            // Teacher or Parent Login from DB
             var user = _context.Users.FirstOrDefault(u =>
                 u.Email == username &&
                 u.PasswordHash == password &&
@@ -52,16 +37,18 @@ namespace EduClockPlus.Controllers
                 return View();
             }
 
+            HttpContext.Session.SetString("UserEmail", user.Email);
+            HttpContext.Session.SetString("UserRole", user.Role);
+
             return role switch
             {
+                "Admin" => RedirectToAction("Dashboard", "Admin"),
                 "Teacher" => RedirectToAction("Dashboard", "Teacher"),
                 "Parent" => RedirectToAction("Dashboard", "Parent"),
                 _ => View()
             };
         }
-
         public IActionResult RegisterSchool() => View();
-
         [HttpPost]
         public async Task<IActionResult> RegisterSchool(
             string schoolName, string address, string email,
@@ -74,16 +61,13 @@ namespace EduClockPlus.Controllers
                 ViewBag.Error = "All fields are required.";
                 return View();
             }
-
             bool schoolExists = _context.Schools.Any(s => s.SchoolName == schoolName || s.Email == email);
             bool adminExists = _context.Users.Any(u => u.Email == adminEmail);
-
             if (schoolExists || adminExists)
             {
                 ViewBag.Error = "This school or admin already exists in the system.";
                 return View();
             }
-
             var newSchool = new School
             {
                 Id = Guid.NewGuid(),
@@ -91,10 +75,8 @@ namespace EduClockPlus.Controllers
                 Address = address,
                 Email = email
             };
-
             _context.Schools.Add(newSchool);
             _context.SaveChanges();
-
             var adminUser = new User
             {
                 UserID = Guid.NewGuid(),
@@ -105,7 +87,6 @@ namespace EduClockPlus.Controllers
                 SchoolId = (int)newSchool.Id.GetHashCode(),
                 School = newSchool
             };
-
             _context.Users.Add(adminUser);
             _context.SaveChanges();
 
@@ -113,13 +94,13 @@ namespace EduClockPlus.Controllers
             {
                 string subject = $"Welcome to EduClockPlus, {schoolName}!";
                 string body = $@"
-            <h2>Welcome to EduClockPlus 🎓</h2>
+            <h2>Welcome to EduClockPlus🎓</h2>
             <p>Dear {adminName},</p>
             <p>Your school <strong>{schoolName}</strong> has been successfully registered.</p>
             <p>You can now log in to your Admin Dashboard and begin adding Teachers and Parents.</p>
             <p><a href='{Request.Scheme}://{Request.Host}/Account/Login' style='color:#007bff;'>Go to Login Page</a></p>
             <br/>
-            <p>– The EduClockPlus Team</p>";
+            <p>– The EduClockPlus Team. Thanks</p>";
 
                 await _emailservice.SendEmailAsync(adminEmail, subject, body);
             }
@@ -127,18 +108,14 @@ namespace EduClockPlus.Controllers
             {
                 Console.WriteLine($"Email sending failed: {ex.Message}");
             }
-
-            TempData["Success"] = "School registered successfully! A welcome email has been sent.";
+            TempData["Success"] = "School registered successfully! Kindly Check your email for login details.";
             return RedirectToAction("Login");
         }
-
-
         [HttpPost]
         public IActionResult Logout()
         {
             return RedirectToAction("Login", "Account");
         }
-
     }
 
 }

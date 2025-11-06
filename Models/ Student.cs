@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ClassClockPlus.Models
 {
@@ -12,9 +11,7 @@ namespace ClassClockPlus.Models
         public string FullName { get; set; } = default!;
 
         public string? Gender { get; set; }
-
         public string? ClassName { get; set; }
-
         public string? ImagePath { get; set; }
 
         public Guid ParentID { get; set; }
@@ -24,7 +21,12 @@ namespace ClassClockPlus.Models
         public Teacher Teacher { get; set; } = default!;
 
         public bool IsClockedOut { get; set; } = false;
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // New fields for dashboard
+        [Range(0, 100)]
+        public int Attendance { get; set; } = 100; // default to 100%
+        public string? Performance { get; set; } = "Good";
+        public string? Subjects { get; set; } = "-";
     }
 }

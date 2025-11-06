@@ -1,19 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
-using ClassClockPlus.Models;
 
 namespace ClassClockPlus.Controllers
 {
     public class AdminController : Controller
     {
         private readonly EduclockDbContext _context;
-
         public AdminController(EduclockDbContext context)
         {
             _context = context;
         }
-
         public IActionResult Dashboard()
         {
             var teachers = _context.Teachers
@@ -45,50 +42,6 @@ namespace ClassClockPlus.Controllers
 
             return View();
         }
-
-        [HttpGet]
-        public IActionResult AddTeacher()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult AddTeacher(string FullName, string Email, string Password, string? PhoneNumber, string? ClassName, string? Subject)
-        {
-            if (string.IsNullOrEmpty(FullName) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
-            {
-                ViewBag.Error = "Please fill in all required fields.";
-                return View();
-            }
-
-            // Create a linked User record
-            var user = new User
-            {
-                UserID = Guid.NewGuid(),
-                FullName = FullName,
-                Email = Email,
-                PasswordHash = Password,
-                Role = "Teacher"
-            };
-
-            var teacher = new Teacher
-            {
-                TeacherID = Guid.NewGuid(),
-                UserID = user.UserID,
-                User = user,
-                FullName = FullName,
-                Email = Email,
-                PhoneNumber = PhoneNumber,
-                ClassName = ClassName,
-                Subject = Subject
-            };
-
-            _context.Users.Add(user);
-            _context.Teachers.Add(teacher);
-            _context.SaveChanges();
-
-            TempData["Success"] = "Teacher added successfully!";
-            return RedirectToAction("Dashboard");
-        }
+       
     }
 }

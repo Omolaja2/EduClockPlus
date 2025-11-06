@@ -3,12 +3,11 @@
     var parent = ViewBag.Parent as dynamic;
     var children = ViewBag.Children as IEnumerable<dynamic>;
 }
-
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
-            <h2 class="fw-bold">Welcome, @parent?.FullName 👋</h2>
-            <p class="text-muted mb-0">Monitor your children’s progress, attendance, and updates here.</p>
+            <h2 class="fw-bold">Welcome, @parent?.User?.FullName 👋</h2>
+            <p class="text-muted mb-0">Monitor your children’s progress, attendance, and updates and results on here!</p>
         </div>
 
         <form asp-controller="Account" asp-action="Logout" method="post">
@@ -18,7 +17,6 @@
         </form>
     </div>
 
-    <!-- Summary Cards -->
     <div class="row g-3 mb-5">
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4">
@@ -38,6 +36,7 @@
                 </div>
             </div>
         </div>
+
         <div class="col-md-4">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body text-center py-4">
@@ -49,7 +48,7 @@
         </div>
     </div>
 
-    <!-- Children Table -->
+
     <h4 class="fw-bold mb-3">Your Children</h4>
     @if (children != null && children.Any())
     {
@@ -66,6 +65,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                
                     @foreach (var child in children)
                     {
                         <tr>
@@ -99,13 +99,9 @@
             </table>
         </div>
     }
+
     else
     {
         <p class="text-muted">No child records found yet.</p>
     }
-
-    <!-- Footer -->
-    <p class="text-center text-muted mt-5">
-        <small>© 2025 ClassClockPlus — Parent Portal</small>
-    </p>
 </div>

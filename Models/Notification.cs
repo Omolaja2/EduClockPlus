@@ -6,12 +6,10 @@ namespace ClassClockPlus.Models
     {
         [Key]
         public Guid NotificationID { get; set; }
-
         public Guid ParentID { get; set; }
         public Parent? Parent { get; set; }
-
         public string? Message { get; set; }
-        public string Type { get; set; }= default!;  // "Attendance" or "Report"
+        public string Type { get; set; }= default!;
         public DateTime SentAt { get; set; }
     }
 }

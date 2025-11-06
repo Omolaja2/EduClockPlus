@@ -13,12 +13,10 @@ namespace ClassClockPlus.Models
 
         [Required]
         public string Email { get; set; } = default!;
-
         [Required]
         public string PasswordHash { get; set; } = default!;
-
         [Required]
-        public string Role { get; set; } = default!; // "Admin", "Teacher", "Parent"
+        public string Role { get; set; } = default!;
         public int SchoolId { get; set; }
         public School? School { get; set; }
     }

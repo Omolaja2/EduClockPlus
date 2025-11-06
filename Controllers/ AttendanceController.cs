@@ -16,7 +16,6 @@ namespace EduClockPlus.Controllers
             _context = context;
             _emailService = emailService;
         }
-
         public IActionResult Index()
         {
             var records = _context.Attendance
@@ -38,8 +37,7 @@ namespace EduClockPlus.Controllers
 
             ViewBag.Students = students;
             return View();
-        }
-
+        }  
         [HttpPost]
         public async Task<IActionResult> Mark(Guid studentId, bool isPresent)
         {

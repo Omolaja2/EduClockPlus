@@ -25,21 +25,19 @@ namespace EduClockPlus.Controllers
                 return View("Error");
             }
 
+
             var students = _context.Students
                 .Where(s => s.TeacherID == teacher.TeacherID)
                 .Include(s => s.Parent)
                 .ThenInclude(p => p.User)
                 .ToList();
-
             var parents = _context.Parents.Include(p => p.User).ToList();
 
             ViewBag.Teacher = teacher;
             ViewBag.Students = students;
             ViewBag.Parents = parents;
-
             return View();
         }
-
         [HttpPost]
         public IActionResult SaveStudent([FromBody] StudentDto dto)
         {
@@ -57,7 +55,6 @@ namespace EduClockPlus.Controllers
                 TeacherID = teacher.TeacherID,
                 ParentID = dto.ParentId
             };
-
             _context.Students.Add(student);
             _context.SaveChanges();
 
@@ -75,6 +72,7 @@ namespace EduClockPlus.Controllers
                     parentEmail = parent?.User?.Email
                 }
             });
+
         }
 
         [HttpGet]
@@ -100,12 +98,56 @@ namespace EduClockPlus.Controllers
                 }
             });
         }
-    }
 
+        [HttpGet]
+        public IActionResult Add()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Add(string FullName, string Email, string Password, string? PhoneNumber, string? ClassName, string? Subject)
+        {
+            if (string.IsNullOrEmpty(FullName) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+            {
+                ViewBag.Error = "Please fill in all required fields.";
+                return View();
+            }
+            var user = new User
+            {
+                UserID = Guid.NewGuid(),
+                FullName = FullName,
+                Email = Email,
+                PasswordHash = Password,
+                Role = "Teacher"
+            };
+
+            var teacher = new Teacher
+            {
+                TeacherID = Guid.NewGuid(),
+                UserID = user.UserID,
+                User = user,
+                FullName = FullName,
+                Email = Email,
+                PhoneNumber = PhoneNumber,
+                ClassName = ClassName,
+                Subject = Subject
+            };
+
+            _context.Users.Add(user);
+            _context.Teachers.Add(teacher);
+            _context.SaveChanges();
+
+
+            TempData["Success"] = "Teacher added successfully!";
+            return RedirectToAction("Dashboard");
+        }
+        
+    }
     public class StudentDto
     {
-        public string StudentName { get; set; }
-        public string Grade { get; set; }
+        public string StudentName { get; set; } = default!;
+        public string Grade { get; set; } = default!;
         public Guid ParentId { get; set; }
     }
 }

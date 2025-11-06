@@ -6,7 +6,37 @@
 <div class="container py-5">
     <h2 class="fw-bold mb-4">Teacher Dashboard</h2>
 
-    <!-- Add Student Form -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students</h5>
+                    <p class="fs-3">@students?.Count() ?? 0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Parents</h5>
+                    <p class="fs-3">@parents?.Count() ?? 0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Average Attendance</h5>
+                    @{
+                        var avgAttendance = students?.Any() == true ? 
+                                            students.Average(s => (int?)s.Attendance ?? 0) : 0;
+                    }
+                    <p class="fs-3">@avgAttendance.ToString("0")%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form id="studentForm" class="mb-4">
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
@@ -33,28 +63,40 @@
         </div>
     </form>
 
-    <!-- Student Table -->
-    <table class="table table-hover" id="studentsTable">
+    <table class="table table-hover table-bordered" id="studentsTable">
         <thead class="table-dark">
             <tr>
                 <th>Student Name</th>
                 <th>Grade</th>
                 <th>Parent</th>
+                <th>Attendance</th>
+                <th>Performance</th>
+                <th>Subjects</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var s in students!)
             {
-                <tr data-id="@s.StudentID">
+                <tr data-id="@s.StudentID" style="cursor:pointer;">
                     <td>@s.FullName</td>
                     <td>@s.ClassName</td>
                     <td>@(s.Parent?.User?.FullName ?? "N/A")</td>
+                    <td>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width:@(s.Attendance ?? 0)%"></div>
+                        </div>
+                        <small class="text-muted">@s.Attendance ?? 0% Present</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-info text-dark">@s.Performance ?? "Good"</span>
+                    </td>
+                    <td>@s.Subjects ?? "-" </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <!-- Details Panel -->
+    @* <!-- Detailed Student Info --> *@
     <div id="studentDetails" class="alert alert-info mt-4" style="display:none;"></div>
 </div>
 
@@ -83,17 +125,21 @@ document.getElementById("studentForm").addEventListener("submit", function (e) {
     .then(res => {
         if (res.success) {
             const s = res.student;
-
-            // Append new row to table instantly
             const row = `
-                <tr data-id="${s.studentID}">
+                <tr data-id="${s.studentID}" style="cursor:pointer;">
                     <td>${s.fullName}</td>
                     <td>${s.grade}</td>
                     <td>${s.parentName || "N/A"}</td>
+                    <td>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width:85%"></div>
+                        </div>
+                        <small class="text-muted">85% Present</small>
+                    </td>
+                    <td><span class="badge bg-info text-dark">Good</span></td>
+                    <td>-</td>
                 </tr>`;
             document.querySelector("#studentsTable tbody").insertAdjacentHTML("beforeend", row);
-
-            // Reset form
             document.getElementById("studentForm").reset();
         } else {
             alert(res.message);
