@@ -1,0 +1,54 @@
+@model dynamic
+
+<div class="p-3">
+    <div class="d-flex align-items-center mb-3">
+        <img src="@(!string.IsNullOrEmpty(Model.ImagePath) ? Model.ImagePath : "/images/default-user.png")"
+             class="rounded-circle me-3" style="width:80px;height:80px;object-fit:cover;">
+        <div>
+            <h4 class="fw-bold mb-0">@Model.FullName</h4>
+            <small class="text-muted">Class: @Model.ClassName</small>
+        </div>
+    </div>
+
+    <hr />
+
+    <h6 class="fw-bold">Parent Information</h6>
+    <p class="mb-1"><strong>Name:</strong> @Model.ParentName</p>
+    <p class="mb-1"><strong>Email:</strong> @Model.ParentEmail</p>
+
+    <h6 class="fw-bold">Recent Attendance</h6>
+    @if (Model.Attendance != null && Model.Attendance.Count > 0)
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model.Attendance)
+                {
+                    <tr>
+                        <td>@a.Date.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <span class="badge @(a.Status == "Present" ? "bg-success" : "bg-danger")">@a.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">No recent attendance records.</p>
+    }
+
+    <h6 class="fw-bold mt-3">Clock Info</h6>
+    <p><strong>Clocked In:</strong> @(Model.ClockInTime?.ToString("hh:mm tt") ?? "Not yet")</p>
+    <p><strong>Clocked Out:</strong> @(Model.ClockOutTime?.ToString("hh:mm tt") ?? "Not yet")</p>
+
+    <div class="text-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+</div>

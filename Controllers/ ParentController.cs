@@ -3,6 +3,7 @@ using EduClockPlus.Models.DB;
 using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Services;
 using ClassClockPlus.Models;
+
 namespace EduClockPlus.Controllers
 {
     public class ParentController : Controller
@@ -15,52 +16,6 @@ namespace EduClockPlus.Controllers
             _context = context;
             _emailService = emailService;
         }
-
-        [HttpGet]
-        public IActionResult Add()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult Add(string fullName, string email, string phone, string password)
-        {
-            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-            {
-                ViewBag.Error = "All fields are required.";
-                return View();
-            }
-            // // Check for duplicate email
-            // if (_context.Users.Any(u => u.Email == email))
-            // {
-            //     ViewBag.Error = "A user with this email already exists.";
-            //     return View();
-            // }
-            var user = new User
-            {
-                UserID = Guid.NewGuid(),
-                FullName = fullName,
-                Email = email,
-                PasswordHash = password,
-                Role = "Parent"
-            };
-
-            var parent = new Parent
-            {
-                ParentID = Guid.NewGuid(),
-                UserID = user.UserID,
-                User = user,
-                Phone = phone
-            };
-
-            _context.Users.Add(user);
-            _context.Parents.Add(parent);
-            _context.SaveChanges();
-
-            TempData["Success"] = "Parent added successfully!";
-            return RedirectToAction("Dashboard", "Admin");
-        }
-
         public IActionResult Dashboard()
         {
             var email = HttpContext.Session.GetString("UserEmail");
@@ -70,16 +25,44 @@ namespace EduClockPlus.Controllers
             var parent = _context.Parents
                 .Include(p => p.User)
                 .Include(p => p.Students!)
-                .ThenInclude(c => c.Teacher)
+                    .ThenInclude(s => s.Teacher)
                 .FirstOrDefault(p => p.User!.Email == email);
 
             if (parent == null)
                 return RedirectToAction("Login", "Account");
 
+            var notifications = _context.Notifications
+                .Where(n => n.ParentID == parent.ParentID && n.SentAt >= DateTime.UtcNow.AddDays(-7))
+                .OrderByDescending(n => n.SentAt)
+                .ToList();
+
+            var childrenData = parent.Students!
+                .Select(s =>
+                {
+                    var totalDays = _context.Attendance.Count(a => a.StudentID == s.StudentID);
+                    var presentDays = _context.Attendance.Count(a => a.StudentID == s.StudentID && a.Status == "Present");
+                    var attendancePercent = totalDays > 0 ? (presentDays * 100 / totalDays) : 0;
+
+                    return new
+                    {
+                        s.StudentID,
+                        s.FullName,
+                        s.ClassName,
+                        s.ImagePath,
+                        s.IsClockedIn,
+                        s.IsClockedOut,
+                        s.Performance,
+                        Attendance = attendancePercent,
+                        Teacher = s.Teacher,
+                    };
+                }).ToList();
+
             ViewBag.Parent = parent;
+            ViewBag.Children = childrenData;
+            ViewBag.Notifications = notifications;
+
             return View();
         }
-
         public IActionResult StudentDetails(Guid id)
         {
             var student = _context.Students
@@ -90,8 +73,64 @@ namespace EduClockPlus.Controllers
             if (student == null)
                 return NotFound();
 
-            return View(student);
+            var attendanceHistory = _context.Attendance
+                .Where(a => a.StudentID == id)
+                .OrderByDescending(a => a.Date)
+                .Take(10)
+                .ToList();
+
+            ViewBag.AttendanceHistory = attendanceHistory;
+
+            return PartialView("_StudentDetailsPartial", student);
         }
+
+
+        [HttpGet]
+        public IActionResult Add()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Add(string fullName, string email, string phone, string password)
+        {
+            if (await _context.Users.AnyAsync(u => u.Email == email))
+            {
+                ViewBag.Error = "A user with this email already exists.";
+                return View();
+            }
+
+            var user = new User
+            {
+
+                UserID = Guid.NewGuid(),
+                FullName = fullName,
+                Email = email,
+                PasswordHash = password,
+                Role = "Parent",
+            };
+
+            var parent = new Parent
+            {
+                ParentID = Guid.NewGuid(),
+                UserID = user.UserID
+            };
+
+            _context.Users.Add(user);
+            _context.Parents.Add(parent);
+            await _context.SaveChangesAsync();
+
+            await _emailService.SendEmailAsync(
+                email,
+                $"Welcome! Dear Parent",
+                $"Hello {fullName}, your parent account has been created successfully!"
+            );
+
+            TempData["Success"] = "Parent added successfully!";
+            return RedirectToAction("Dashboard", "Admin");
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> SendFeedback(Guid teacherId, string message)
@@ -112,7 +151,8 @@ namespace EduClockPlus.Controllers
                 message
             );
 
-            TempData["Success"] = "Your message was successfully sent to the teacher.";
+
+            TempData["Success"] = "Message sent successfully!";
             return RedirectToAction("Dashboard");
         }
     }

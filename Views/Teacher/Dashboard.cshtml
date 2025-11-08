@@ -4,170 +4,215 @@
 }
 
 <div class="container py-5">
-    <h2 class="fw-bold mb-4">Teacher Dashboard</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Teacher Dashboard</h2>
+
+        <div class="d-flex align-items-center gap-3">
+            <h5 class="mb-0" id="liveClock"></h5>
+
+            <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
 
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
+        <div class="col-md-6">
+            <div class="card text-center shadow-sm border-0 bg-primary text-white">
                 <div class="card-body">
                     <h5 class="card-title">Total Students</h5>
-                    <p class="fs-3">@students?.Count() ?? 0</p>
+                    <p class="fs-3 fw-bold">@((students?.Count() ?? 0))</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
+        <div class="col-md-6">
+            <div class="card text-center shadow-sm border-0 bg-success text-white">
                 <div class="card-body">
                     <h5 class="card-title">Total Parents</h5>
-                    <p class="fs-3">@parents?.Count() ?? 0</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Average Attendance</h5>
-                    @{
-                        var avgAttendance = students?.Any() == true ? 
-                                            students.Average(s => (int?)s.Attendance ?? 0) : 0;
-                    }
-                    <p class="fs-3">@avgAttendance.ToString("0")%</p>
+                    <p class="fs-3 fw-bold">@((parents?.Count() ?? 0))</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <form id="studentForm" class="mb-4">
+    <form id="studentForm" enctype="multipart/form-data" class="mb-4 bg-light p-3 rounded shadow-sm">
         <div class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label">Student Name</label>
-                <input type="text" id="studentName" class="form-control" required />
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Student Name</label>
+                <input type="text" name="studentName" class="form-control" required />
             </div>
             <div class="col-md-3">
-                <label class="form-label">Grade</label>
-                <input type="text" id="grade" class="form-control" required />
+                <label class="form-label fw-semibold">Grade</label>
+                <input type="text" name="grade" class="form-control" required />
             </div>
             <div class="col-md-3">
-                <label class="form-label">Parent</label>
-                <select id="parentId" class="form-select" required>
+                <label class="form-label fw-semibold">Parent</label>
+                <select name="parentId" class="form-select" required>
                     <option value="">Select Parent</option>
-                    @foreach (var p in parents!)
+                    @foreach (var p in parents ?? Enumerable.Empty<dynamic>())
                     {
-                        <option value="@p.ParentID">@p.User.FullName (@p.User.Email)</option>
+                        <option value="@p.ParentID">@p.User?.FullName ?? "N/A" (@p.User?.Email ?? "N/A")</option>
                     }
                 </select>
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Save Student</button>
+                <label class="form-label fw-semibold">Photo</label>
+                <input type="file" name="imageFile" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Add</button>
             </div>
         </div>
     </form>
 
-    <table class="table table-hover table-bordered" id="studentsTable">
-        <thead class="table-dark">
-            <tr>
-                <th>Student Name</th>
-                <th>Grade</th>
-                <th>Parent</th>
-                <th>Attendance</th>
-                <th>Performance</th>
-                <th>Subjects</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var s in students!)
-            {
-                <tr data-id="@s.StudentID" style="cursor:pointer;">
-                    <td>@s.FullName</td>
-                    <td>@s.ClassName</td>
-                    <td>@(s.Parent?.User?.FullName ?? "N/A")</td>
-                    <td>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-success" style="width:@(s.Attendance ?? 0)%"></div>
-                        </div>
-                        <small class="text-muted">@s.Attendance ?? 0% Present</small>
-                    </td>
-                    <td>
-                        <span class="badge bg-info text-dark">@s.Performance ?? "Good"</span>
-                    </td>
-                    <td>@s.Subjects ?? "-" </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <table class="table table-hover align-middle" id="studentsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Grade</th>
+                        <th>Parent</th>
+                        <th>Clock</th>
+                        <th>Attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in students ?? Enumerable.Empty<dynamic>())
+                    {
+                        <tr data-id="@s.StudentID" style="cursor:pointer;">
+                            <td>
+                                <img src="@(!string.IsNullOrEmpty(s.ImagePath) ? s.ImagePath : "/images/default-user.png")"
+                                     style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+                            </td>
+                            <td>@(s.FullName ?? "-")</td>
+                            <td>@(s.ClassName ?? "-")</td>
+                            <td>@(s.Parent?.User?.FullName ?? "N/A")</td>
+                            <td>
+                                <button class="btn btn-sm @(s.IsClockedIn ? "btn-danger" : "btn-success") toggleClockBtn" 
+                                        data-id="@s.StudentID">
+                                    @(s.IsClockedIn ? "Clock Out" : "Clock In")
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input attendance-check" 
+                                           data-id="@s.StudentID" id="att_@s.StudentID">
+                                    <label class="form-check-label" for="att_@s.StudentID">Absent</label>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <button id="saveAttendanceBtn" class="btn btn-primary mt-3">Save Attendance</button>
+        </div>
+    </div>
+</div>
 
-    @* <!-- Detailed Student Info --> *@
-    <div id="studentDetails" class="alert alert-info mt-4" style="display:none;"></div>
+<div class="modal fade" id="studentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="studentModalBody"></div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
 <script>
-document.getElementById("studentForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const data = {
-        studentName: document.getElementById("studentName").value.trim(),
-        grade: document.getElementById("grade").value.trim(),
-        parentId: document.getElementById("parentId").value
-    };
-
-    if (!data.studentName || !data.grade || !data.parentId) {
-        alert("Please fill all fields.");
-        return;
-    }
-
-    fetch('/Teacher/SaveStudent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.success) {
-            const s = res.student;
-            const row = `
-                <tr data-id="${s.studentID}" style="cursor:pointer;">
-                    <td>${s.fullName}</td>
-                    <td>${s.grade}</td>
-                    <td>${s.parentName || "N/A"}</td>
-                    <td>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-success" style="width:85%"></div>
-                        </div>
-                        <small class="text-muted">85% Present</small>
-                    </td>
-                    <td><span class="badge bg-info text-dark">Good</span></td>
-                    <td>-</td>
-                </tr>`;
-            document.querySelector("#studentsTable tbody").insertAdjacentHTML("beforeend", row);
-            document.getElementById("studentForm").reset();
-        } else {
-            alert(res.message);
-        }
-    })
-    .catch(() => alert("Error saving student."));
-});
-
-document.querySelector("#studentsTable").addEventListener("click", function (e) {
-    const row = e.target.closest("tr");
-    if (!row) return;
-
-    const studentId = row.dataset.id;
-    fetch(`/Teacher/GetStudentDetails?studentId=${studentId}`)
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                const s = res.student;
-                const html = `
-                    <strong>Student:</strong> ${s.fullName}<br>
-                    <strong>Grade:</strong> ${s.grade}<br>
-                    <strong>Parent:</strong> ${s.parentName} (${s.parentEmail})
-                `;
-                const detailsDiv = document.getElementById("studentDetails");
-                detailsDiv.innerHTML = html;
-                detailsDiv.style.display = 'block';
-            }
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('liveClock').textContent = now.toLocaleTimeString([], {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
-});
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    document.getElementById("studentForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const res = await fetch('/Teacher/SaveStudent', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+            alert("Student added!");
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+
+    document.addEventListener("click", async (e) => {
+        if (e.target.classList.contains("toggleClockBtn")) {
+            const btn = e.target;
+            const id = btn.dataset.id;
+            const res = await fetch('/Teacher/ToggleClock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                btn.classList.toggle('btn-success');
+                btn.classList.toggle('btn-danger');
+                btn.textContent = data.isClockedIn ? 'Clock Out' : 'Clock In';
+            } else {
+                alert(data.message);
+            }
+        }
+    });
+
+    document.getElementById("saveAttendanceBtn").addEventListener("click", async function() {
+        const checkboxes = document.querySelectorAll(".attendance-check");
+        const attendanceData = [];
+        checkboxes.forEach(chk => {
+            attendanceData.push({
+                studentId: chk.dataset.id,
+                status: chk.checked ? "Present" : "Absent"
+            });
+        });
+
+        const res = await fetch('/Teacher/SaveAttendanceBatch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(attendanceData)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            alert("Attendance saved successfully!");
+        } else {
+            alert(data.message || "Error saving attendance.");
+        }
+    });
+
+    document.addEventListener("change", (e) => {
+        if (e.target.classList.contains("attendance-check")) {
+            const label = e.target.nextElementSibling;
+            label.textContent = e.target.checked ? "Present" : "Absent";
+        }
+    });
+
+    document.querySelectorAll("#studentsTable tbody tr").forEach(row => {
+        row.addEventListener("click", async (e) => {
+            if (e.target.closest(".toggleClockBtn") || e.target.closest(".attendance-check"))
+                return; 
+
+            const studentId = row.dataset.id;
+            const res = await fetch(`/Teacher/GetStudentDetails?id=${studentId}`);
+            if (!res.ok) return alert("Error loading student details.");
+
+            const html = await res.text();
+            document.getElementById("studentModalBody").innerHTML = html;
+            new bootstrap.Modal(document.getElementById("studentModal")).show();
+        });
+    });
 </script>
 }

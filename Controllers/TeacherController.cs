@@ -2,44 +2,54 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
 using ClassClockPlus.Models;
+using EduClockPlus.Services;
 
 namespace EduClockPlus.Controllers
 {
     public class TeacherController : Controller
     {
         private readonly EduclockDbContext _context;
+        private readonly EmailService _emailService;
+        private readonly IWebHostEnvironment _env;
 
-        public TeacherController(EduclockDbContext context)
+        public TeacherController(EduclockDbContext context, EmailService emailService, IWebHostEnvironment env)
         {
             _context = context;
+            _emailService = emailService;
+            _env = env;
         }
 
         public IActionResult Dashboard()
         {
-            string currentTeacherEmail = HttpContext.Session.GetString("UserEmail")!;
-            var teacher = _context.Teachers.FirstOrDefault(t => t.Email == currentTeacherEmail);
+            var currentTeacherEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(currentTeacherEmail))
+                return RedirectToAction("Login", "Account");
+
+            var teacher = _context.Teachers
+                .Include(t => t.User)
+                .FirstOrDefault(t => t.Email == currentTeacherEmail || t.User!.Email == currentTeacherEmail);
 
             if (teacher == null)
-            {
-                ViewBag.Error = "Teacher not found. Please log in again.";
-                return View("Error");
-            }
-
+                return RedirectToAction("Login", "Account");
 
             var students = _context.Students
                 .Where(s => s.TeacherID == teacher.TeacherID)
-                .Include(s => s.Parent)
-                .ThenInclude(p => p.User)
+                .Include(s => s.Parent).ThenInclude(p => p.User)
                 .ToList();
+
             var parents = _context.Parents.Include(p => p.User).ToList();
 
             ViewBag.Teacher = teacher;
             ViewBag.Students = students;
             ViewBag.Parents = parents;
+
             return View();
         }
+
+
+
         [HttpPost]
-        public IActionResult SaveStudent([FromBody] StudentDto dto)
+        public async Task<IActionResult> SaveStudent(IFormFile? imageFile, string studentName, string grade, Guid parentId)
         {
             var teacherEmail = HttpContext.Session.GetString("UserEmail");
             var teacher = _context.Teachers.FirstOrDefault(t => t.Email == teacherEmail);
@@ -47,107 +57,200 @@ namespace EduClockPlus.Controllers
             if (teacher == null)
                 return Json(new { success = false, message = "Teacher not found." });
 
+            string? imagePath = null;
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "students");
+                Directory.CreateDirectory(uploadsDir);
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
+                var filePath = Path.Combine(uploadsDir, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                    await imageFile.CopyToAsync(stream);
+                imagePath = $"/uploads/students/{fileName}";
+            }
+
             var student = new Student
             {
                 StudentID = Guid.NewGuid(),
-                FullName = dto.StudentName,
-                ClassName = dto.Grade,
+                FullName = studentName,
+                ClassName = grade,
                 TeacherID = teacher.TeacherID,
-                ParentID = dto.ParentId
+                ParentID = parentId,
+                ImagePath = imagePath,
+                IsClockedIn = false
             };
+
             _context.Students.Add(student);
-            _context.SaveChanges();
-
-            var parent = _context.Parents.Include(p => p.User).FirstOrDefault(p => p.ParentID == dto.ParentId);
-
-            return Json(new
-            {
-                success = true,
-                student = new
-                {
-                    student.StudentID,
-                    fullName = student.FullName,
-                    grade = student.ClassName,
-                    parentName = parent?.User?.FullName,
-                    parentEmail = parent?.User?.Email
-                }
-            });
-
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, student });
         }
 
-        [HttpGet]
-        public IActionResult GetStudentDetails(Guid studentId)
-        {
-            var student = _context.Students
-                .Include(s => s.Parent)
-                .ThenInclude(p => p.User)
-                .FirstOrDefault(s => s.StudentID == studentId);
 
+        [HttpPost]
+        public async Task<IActionResult> ToggleClock([FromBody] ClockDto dto)
+        {
+            var student = await _context.Students.Include(s => s.Parent).ThenInclude(p => p.User)
+                .FirstOrDefaultAsync(s => s.StudentID == dto.StudentId);
             if (student == null)
                 return Json(new { success = false, message = "Student not found." });
 
-            return Json(new
+            student.IsClockedIn = !student.IsClockedIn;
+            if (student.IsClockedIn)
             {
-                success = true,
-                student = new
+                student.ClockInTime = DateTime.Now;
+                await _emailService.SendEmailAsync(student.Parent.User!.Email,
+                    $"✅ {student.FullName} Clocked In",
+                    $"{student.FullName} clocked in at {student.ClockInTime:hh:mm tt}.");
+            }
+            else
+            {
+                student.ClockOutTime = DateTime.Now;
+                await _emailService.SendEmailAsync(student.Parent.User!.Email,
+                    $"🕓 {student.FullName} Clocked Out",
+                    $"{student.FullName} clocked out at {student.ClockOutTime:hh:mm tt}.");
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, isClockedIn = student.IsClockedIn });
+        }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> SaveAttendanceBatch([FromBody] List<AttendanceInput> attendanceList)
+        {
+            var teacherEmail = HttpContext.Session.GetString("UserEmail");
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Email == teacherEmail);
+            if (teacher == null)
+                return Json(new { success = false, message = "Unauthorized" });
+
+            var today = DateTime.UtcNow.Date;
+
+            foreach (var item in attendanceList)
+            {
+                var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentID == item.StudentId);
+                if (student == null)
+                    continue;
+
+                var existing = await _context.Attendance
+                    .FirstOrDefaultAsync(a => a.StudentID == item.StudentId && a.Date == today);
+
+                if (existing == null)
                 {
-                    fullName = student.FullName,
-                    grade = student.ClassName,
-                    parentName = student.Parent?.User?.FullName,
-                    parentEmail = student.Parent?.User?.Email
+                    _context.Attendance.Add(new Attendance
+                    {
+                        AttendanceID = Guid.NewGuid(),
+                        StudentID = item.StudentId,
+                        TeacherID = teacher.TeacherID,
+                        StudentName = student.FullName,
+                        Date = today,
+                        Status = item.Status
+                    });
                 }
+                else
+                {
+                    existing.Status = item.Status;
+                    existing.StudentName = student.FullName;
+                    _context.Attendance.Update(existing);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetStudentDetails(Guid id)
+        {
+            var student = await _context.Students
+                .Include(s => s.Parent).ThenInclude(p => p.User)
+                .FirstOrDefaultAsync(s => s.StudentID == id);
+
+            if (student == null)
+                return NotFound("Student not found");
+
+            var attendance = await _context.Attendance
+                .Where(a => a.StudentID == id)
+                .OrderByDescending(a => a.Date)
+                .Take(5)
+                .ToListAsync();
+
+            return PartialView("_StudentDetailsPartial", new
+            {
+                student.FullName,
+                student.ClassName,
+                student.ImagePath,
+                student.IsClockedIn,
+                student.ClockInTime,
+                student.ClockOutTime,
+                ParentName = student.Parent?.User?.FullName,
+                ParentEmail = student.Parent?.User?.Email,
+                Attendance = attendance
             });
         }
 
-        [HttpGet]
+        [HttpGet] 
         public IActionResult Add()
         {
             return View();
         }
-
+        
         [HttpPost]
-        public IActionResult Add(string FullName, string Email, string Password, string? PhoneNumber, string? ClassName, string? Subject)
+        public async Task<IActionResult> Add(string fullName, string email, string phoneNumber, string className, string subject, string password)
+
         {
-            if (string.IsNullOrEmpty(FullName) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+            if (string.IsNullOrWhiteSpace(email))
             {
-                ViewBag.Error = "Please fill in all required fields.";
-                return View();
+                ViewBag.Error("Email Requires");
             }
+
+            var exixtinguser = await _context.Users.FirstOrDefaultAsync(k => k.Email == email);
+            // if (exixtinguser != null)
+            // {
+            //     ViewBag.Error = "A user with this email already exists.";
+            //     return View();
+            // }
+
             var user = new User
             {
                 UserID = Guid.NewGuid(),
-                FullName = FullName,
-                Email = Email,
-                PasswordHash = Password,
+                FullName = fullName,
+                Email = email,
+                PasswordHash = password,
                 Role = "Teacher"
+
             };
+            _context.Users.Add(user);
+           await _context.SaveChangesAsync();
 
             var teacher = new Teacher
             {
                 TeacherID = Guid.NewGuid(),
                 UserID = user.UserID,
-                User = user,
-                FullName = FullName,
-                Email = Email,
-                PhoneNumber = PhoneNumber,
-                ClassName = ClassName,
-                Subject = Subject
+                FullName = fullName,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                ClassName = className,
+                Subject = subject,
             };
-
-            _context.Users.Add(user);
             _context.Teachers.Add(teacher);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
+            TempData["Sucess"] = "Teacher Added Sucessfully";
+            return RedirectToAction("Add");
 
-            TempData["Success"] = "Teacher added successfully!";
-            return RedirectToAction("Dashboard");
         }
-        
     }
-    public class StudentDto
+    
+//---------------------------------------------------------------------------------------------------------------
+    public class ClockDto
     {
-        public string StudentName { get; set; } = default!;
-        public string Grade { get; set; } = default!;
-        public Guid ParentId { get; set; }
+        public Guid StudentId { get; set; }
+    }
+    public class AttendanceInput
+    {
+        public Guid StudentId { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

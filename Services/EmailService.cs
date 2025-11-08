@@ -1,7 +1,5 @@
 using System.Net;
 using System.Net.Mail;
-using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
 
 namespace EduClockPlus.Services
 {
@@ -16,7 +14,6 @@ namespace EduClockPlus.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            // Read email settings from appsettings.json
             var fromEmail = _config["EmailSettings:FromEmail"];
             var password = _config["EmailSettings:Password"];
             var smtpHost = _config["EmailSettings:SmtpHost"];
