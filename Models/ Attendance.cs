@@ -10,8 +10,11 @@ namespace ClassClockPlus.Models
         public Guid StudentID { get; set; }
         public Student Student { get; set; } = default!;
         public Guid TeacherID { get; set; }
-        public Teacher? Teacher { get; set; } 
+        public Teacher? Teacher { get; set; }
         public DateTime Date { get; set; }
         public string Status { get; set; } = default!;
+        [MaxLength(100)]
+        public string StudentName { get; set; } = string.Empty;
+
     }
 }

@@ -22,11 +22,12 @@ namespace ClassClockPlus.Models
 
         public bool IsClockedOut { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // New fields for dashboard
         [Range(0, 100)]
         public int Attendance { get; set; } = 100; // default to 100%
         public string? Performance { get; set; } = "Good";
         public string? Subjects { get; set; } = "-";
+        public DateTime? ClockInTime { get; set; }
+        public DateTime? ClockOutTime { get; set; }
+        public bool IsClockedIn { get; set; } = false;
     }
 }

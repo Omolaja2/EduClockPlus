@@ -4,6 +4,7 @@ using EduClockPlus.Models.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduClockPlus.Migrations
 {
     [DbContext(typeof(EduclockDbContext))]
-    partial class EduclockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251106093829_AddClockInFieldsToStudent")]
+    partial class AddClockInFieldsToStudent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,11 +40,6 @@ namespace EduClockPlus.Migrations
 
                     b.Property<Guid>("StudentID")
                         .HasColumnType("char(36)");
-
-                    b.Property<string>("StudentName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
 
                     b.Property<Guid>("TeacherID")
                         .HasColumnType("char(36)");
@@ -299,7 +297,7 @@ namespace EduClockPlus.Migrations
             modelBuilder.Entity("ClassClockPlus.Models.Notification", b =>
                 {
                     b.HasOne("ClassClockPlus.Models.Parent", "Parent")
-                        .WithMany("Notifications")
+                        .WithMany()
                         .HasForeignKey("ParentID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -370,8 +368,6 @@ namespace EduClockPlus.Migrations
 
             modelBuilder.Entity("ClassClockPlus.Models.Parent", b =>
                 {
-                    b.Navigation("Notifications");
-
                     b.Navigation("Students");
                 });
 
