@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
 using ClassClockPlus.Models;
 using EduClockPlus.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace EduClockPlus.Controllers
 {
@@ -46,13 +47,13 @@ namespace EduClockPlus.Controllers
             return View();
         }
 
-
-
         [HttpPost]
-        public async Task<IActionResult> SaveStudent(IFormFile? imageFile, string studentName, string grade, Guid parentId)
+        public async Task<IActionResult> SaveStudent(IFormFile? imageFile, string studentName, string gender, Guid parentId)
         {
             var teacherEmail = HttpContext.Session.GetString("UserEmail");
-            var teacher = _context.Teachers.FirstOrDefault(t => t.Email == teacherEmail);
+            var teacher = _context.Teachers
+                .Include(t => t.User)
+                .FirstOrDefault(t => t.Email == teacherEmail || t.User!.Email == teacherEmail);
 
             if (teacher == null)
                 return Json(new { success = false, message = "Teacher not found." });
@@ -73,11 +74,13 @@ namespace EduClockPlus.Controllers
             {
                 StudentID = Guid.NewGuid(),
                 FullName = studentName,
-                ClassName = grade,
+                Gender = gender,
+                ClassName = teacher.ClassName,
                 TeacherID = teacher.TeacherID,
                 ParentID = parentId,
                 ImagePath = imagePath,
-                IsClockedIn = false
+                IsClockedIn = false,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Students.Add(student);
@@ -89,8 +92,10 @@ namespace EduClockPlus.Controllers
         [HttpPost]
         public async Task<IActionResult> ToggleClock([FromBody] ClockDto dto)
         {
-            var student = await _context.Students.Include(s => s.Parent).ThenInclude(p => p.User)
+            var student = await _context.Students
+                .Include(s => s.Parent).ThenInclude(p => p.User)
                 .FirstOrDefaultAsync(s => s.StudentID == dto.StudentId);
+
             if (student == null)
                 return Json(new { success = false, message = "Student not found." });
 
@@ -101,6 +106,17 @@ namespace EduClockPlus.Controllers
                 await _emailService.SendEmailAsync(student.Parent.User!.Email,
                     $"✅ {student.FullName} Clocked In",
                     $"{student.FullName} clocked in at {student.ClockInTime:hh:mm tt}.");
+
+                // Store attendance as Present when clocked in
+                _context.Attendance.Add(new Attendance
+                {
+                    AttendanceID = Guid.NewGuid(),
+                    StudentID = student.StudentID,
+                    TeacherID = student.TeacherID,
+                    StudentName = student.FullName,
+                    Date = DateTime.UtcNow.Date,
+                    Status = "Present"
+                });
             }
             else
             {
@@ -113,8 +129,6 @@ namespace EduClockPlus.Controllers
             await _context.SaveChangesAsync();
             return Json(new { success = true, isClockedIn = student.IsClockedIn });
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> SaveAttendanceBatch([FromBody] List<AttendanceInput> attendanceList)
@@ -159,6 +173,18 @@ namespace EduClockPlus.Controllers
             return Json(new { success = true });
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteStudent(Guid id)
+        {
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
+                return Json(new { success = false, message = "Student not found." });
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Student removed successfully." });
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetStudentDetails(Guid id)
@@ -179,6 +205,7 @@ namespace EduClockPlus.Controllers
             return PartialView("_StudentDetailsPartial", new
             {
                 student.FullName,
+                student.Gender,
                 student.ClassName,
                 student.ImagePath,
                 student.IsClockedIn,
@@ -190,27 +217,21 @@ namespace EduClockPlus.Controllers
             });
         }
 
-        [HttpGet] 
+        [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
-        
+
+
         [HttpPost]
         public async Task<IActionResult> Add(string fullName, string email, string phoneNumber, string className, string subject, string password)
-
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                ViewBag.Error("Email Requires");
+                ViewBag.Error = "Email is required";
+                return View();
             }
-
-            var exixtinguser = await _context.Users.FirstOrDefaultAsync(k => k.Email == email);
-            // if (exixtinguser != null)
-            // {
-            //     ViewBag.Error = "A user with this email already exists.";
-            //     return View();
-            // }
 
             var user = new User
             {
@@ -219,10 +240,10 @@ namespace EduClockPlus.Controllers
                 Email = email,
                 PasswordHash = password,
                 Role = "Teacher"
-
             };
+
             _context.Users.Add(user);
-           await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             var teacher = new Teacher
             {
@@ -234,16 +255,16 @@ namespace EduClockPlus.Controllers
                 ClassName = className,
                 Subject = subject,
             };
+
             _context.Teachers.Add(teacher);
             await _context.SaveChangesAsync();
 
-            TempData["Sucess"] = "Teacher Added Sucessfully";
-            return RedirectToAction("Add");
+            TempData["Success"] = "Teacher added successfully!";
 
+            return RedirectToAction("Add");
         }
     }
-    
-//---------------------------------------------------------------------------------------------------------------
+
     public class ClockDto
     {
         public Guid StudentId { get; set; }

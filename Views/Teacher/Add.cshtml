@@ -1,75 +1,374 @@
 @{
     ViewData["Title"] = "Add Teacher";
 }
+<style>
+    :root {
+        --primary-blue: #2563eb;
+        --primary-blue-dark: #1e40af;
+        --primary-blue-light: #3b82f6;
+        --bg-gradient-start: #eff6ff;
+        --bg-gradient-end: #dbeafe;
+        --card-bg: #ffffff;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: #e2e8f0;
+        --success-green: #10b981;
+        --danger-red: #ef4444;
+    }
 
-<div class="container py-5">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold">Add New Teacher</h2>
-        <p class="text-muted">Fill in the details below to register a new teacher.</p>
+    body {
+        background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+        min-height: 100vh;
+    }
+
+    .add-teacher-container {
+        padding: 3rem 1rem;
+        max-width: 900px;
+        margin: 0 auto;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .page-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.05rem;
+        margin-bottom: 0;
+    }
+
+    .alert-modern {
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        border: none;
+        font-weight: 500;
+    }
+
+    .alert-danger-modern {
+        background: #fee2e2;
+        color: #dc2626;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+    }
+
+    .alert-success-modern {
+        background: #d1fae5;
+        color: #065f46;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 10px 40px rgba(37, 99, 235, 0.12);
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-group-modern {
+        margin-bottom: 0;
+    }
+
+    .form-label-modern {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.625rem;
+        display: block;
+    }
+
+    .form-control-modern {
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.875rem 1.125rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+        width: 100%;
+    }
+
+    .form-control-modern:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        background: white;
+        outline: none;
+    }
+
+    .form-control-modern::placeholder {
+        color: #94a3b8;
+    }
+
+    .input-group-modern {
+        position: relative;
+    }
+
+    .input-group-modern .form-control-modern {
+        padding-right: 3.5rem;
+    }
+
+    .input-group-text-modern {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        padding: 0 1.125rem;
+        cursor: pointer;
+        z-index: 10;
+        background: transparent;
+        border: none;
+    }
+
+    .input-group-text-modern i {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+    }
+
+    .input-group-text-modern:hover i {
+        color: var(--primary-blue);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--border-color);
+    }
+
+    .btn-modern {
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        background: linear-gradient(135deg, var(--primary-blue-dark) 0%, var(--primary-blue) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        color: white;
+    }
+
+    .btn-secondary-modern {
+        background: white;
+        color: var(--text-secondary);
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-secondary-modern:hover {
+        background: #f8fafc;
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .add-teacher-container {
+            padding: 1.5rem 0.75rem;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .form-card {
+            padding: 1.75rem 1.25rem;
+            border-radius: 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-control-modern {
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+        }
+
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+            padding: 0.875rem 1.5rem;
+        }
+    }
+
+    @@media (min-width: 769px) and (max-width: 1024px) {
+        .add-teacher-container {
+            padding: 2rem 1.25rem;
+        }
+
+        .form-card {
+            padding: 2.5rem 2rem;
+        }
+
+        .form-row {
+            gap: 1.25rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem 1rem;
+        }
+
+        .form-label-modern {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<div class="add-teacher-container">
+    <div class="page-header">
+        <h2 class="page-title">Add New Teacher 👨‍🏫</h2>
+        <p class="page-subtitle">Fill in the details below to register a new teacher.</p>
     </div>
 
     @if (ViewBag.Error != null)
     {
-        <div class="alert alert-danger text-center">@ViewBag.Error</div>
+        <div class="alert-modern alert-danger-modern text-center">@ViewBag.Error</div>
     }
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success text-center">@TempData["Success"]</div>
+        <div class="alert-modern alert-success-modern text-center">@TempData["Success"]</div>
     }
-
-    <div class="card shadow-sm border-0 p-4">
+    <div class="form-card">
         <form method="post" asp-action="Add">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Full Name</label>
-                    <input type="text" name="fullName" class="form-control" placeholder="Enter full name" required />
+            <div class="form-row">
+                <div class="form-group-modern">
+                    <label class="form-label-modern">Full Name</label>
+                    <input type="text" name="fullName" class="form-control-modern" placeholder="Enter full name" required />
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="e.g. teacher@school.com" required />
+
+                <div class="form-group-modern">
+                    <label class="form-label-modern">Email</label>
+                    <input type="email" name="email" class="form-control-modern" placeholder="e.g. teacher@school.com" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group-modern">
+                    <label class="form-label-modern">Phone Number</label>
+                    <input type="tel" name="phoneNumber" class="form-control-modern" placeholder="e.g. +234 812 345 6789" />
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Phone Number</label>
-                    <input type="tel" name="phoneNumber" class="form-control" placeholder="e.g. +234 812 345 6789" />
+                <div class="form-group-modern">
+                    <label class="form-label-modern">Class Name</label>
+                    <input type="text" name="className" class="form-control-modern" placeholder="e.g. Primary 5A" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group-modern">
+                    <label class="form-label-modern">Subject</label>
+                    <input type="text" name="subject" class="form-control-modern" placeholder="e.g. Mathematics" />
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Class Name</label>
-                    <input type="text" name="className" class="form-control" placeholder="e.g. Primary 5A" />
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Subject</label>
-                    <input type="text" name="subject" class="form-control" placeholder="e.g. Mathematics" />
-                </div>
-
-                <div class="col-md-6 position-relative">
-                    <label class="form-label fw-semibold">Password</label>
-                    <div class="input-group">
-                        <input type="password" id="passwordInput" name="password" class="form-control" placeholder="Set teacher account password" required />
-                        <span class="input-group-text bg-white">
-                            <i class="bi bi-eye" id="togglePassword" style="cursor:pointer;"></i>
+                <div class="form-group-modern">
+                    <label class="form-label-modern">Password</label>
+                    <div class="input-group-modern">
+                        <input type="password" id="passwordInput" name="password" class="form-control-modern" placeholder="Set teacher account password" required />
+                        <span class="input-group-text-modern">
+                            <i class="bi bi-eye" id="togglePassword"></i>
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div class="text-center mt-5">
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-person-plus-fill me-2"></i> Add Teacher
+            <div class="form-actions">
+                <button type="submit" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-person-plus-fill"></i> Add Teacher
                 </button>
-                <a href="/Admin/Dashboard" class="btn btn-outline-secondary ms-3">
-                    <i class="bi bi-arrow-left me-2"></i> Back
+                <a href="/Admin/Dashboard" class="btn-modern btn-secondary-modern">
+                    <i class="bi bi-arrow-left"></i> Back
                 </a>
             </div>
         </form>
     </div>
 </div>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-@section Scripts {
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const passwordInput = document.getElementById("passwordInput");
@@ -83,4 +382,3 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-}

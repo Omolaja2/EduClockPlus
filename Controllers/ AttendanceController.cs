@@ -10,7 +10,6 @@ namespace EduClockPlus.Controllers
     {
         private readonly EduclockDbContext _context;
         private readonly EmailService _emailService;
-
         public AttendanceController(EduclockDbContext context, EmailService emailService)
         {
             _context = context;

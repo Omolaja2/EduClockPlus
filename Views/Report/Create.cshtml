@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Create Report Card";
+    var students = ViewBag.Students as List<ClassClockPlus.Models.Student>;
+}
+
+<div class="container py-5">
+    <h3 class="mb-4 text-primary fw-bold">Create Report Card</h3>
+
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label>Student</label>
+            <select name="studentId" class="form-select" required>
+                <option value="">Select Student</option>
+                @foreach (var s in students!)
+                {
+                    <option value="@s.StudentID">@s.FullName</option>
+                }
+            
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Term</label>
+            <select name="term" class="form-select" required>
+                <option>First Term</option>
+                <option>Second Term</option>
+                <option>Third Term</option>
+            </select>
+        </div>
+
+        <div id="subjectsContainer" class="mb-3">
+            <label>Subjects & Scores</label>
+            <div class="d-flex gap-2 mb-2">
+                <input type="text" name="subjects" placeholder="Subject" class="form-control" required />
+                <input type="number" name="scores" placeholder="Score" class="form-control" required />
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="addSubject">+ Add Subject</button>
+
+        <div class="mb-3">
+            <label>Comments</label>
+            <textarea name="comments" class="form-control" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Save & Send Report</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('addSubject').addEventListener('click', () => {
+        const container = document.getElementById('subjectsContainer');
+        const div = document.createElement('div');
+        div.className = 'd-flex gap-2 mb-2';
+        div.innerHTML = `
+            <input type="text" name="subjects" placeholder="Subject" class="form-control" required />
+            <input type="number" name="scores" placeholder="Score" class="form-control" required />
+        `;
+        container.appendChild(div);
+    });
+</script>
