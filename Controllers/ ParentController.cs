@@ -10,7 +10,6 @@ namespace EduClockPlus.Controllers
     {
         private readonly EduclockDbContext _context;
         private readonly EmailService _emailService;
-
         public ParentController(EduclockDbContext context, EmailService emailService)
         {
             _context = context;
@@ -60,9 +59,10 @@ namespace EduClockPlus.Controllers
             ViewBag.Parent = parent;
             ViewBag.Children = childrenData;
             ViewBag.Notifications = notifications;
-
             return View();
         }
+
+
         public IActionResult StudentDetails(Guid id)
         {
             var student = _context.Students
@@ -84,13 +84,11 @@ namespace EduClockPlus.Controllers
             return PartialView("_StudentDetailsPartial", student);
         }
 
-
         [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Add(string fullName, string email, string phone, string password)

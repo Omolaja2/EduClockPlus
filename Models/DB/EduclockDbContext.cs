@@ -15,5 +15,7 @@ namespace EduClockPlus.Models.DB
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<School> Schools { get; set; }
         public DbSet<User> User { get; set; }
+        public DbSet<ReportSubject> ReportSubjects { get; set; }
+
     }
 }

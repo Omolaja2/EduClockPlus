@@ -9,13 +9,16 @@ namespace EduClockPlus.Controllers
     {
         private readonly EduclockDbContext _context;
         private readonly EmailService _emailservice;
-
         public AccountController(EduclockDbContext context, EmailService emailService)
         {
             _context = context;
             _emailservice = emailService;
         }
-        public IActionResult Login() => View();
+        
+        public IActionResult Login()
+        {
+            return View();
+        }
 
         [HttpPost]
         public IActionResult Login(string role, string username, string password)
@@ -49,6 +52,8 @@ namespace EduClockPlus.Controllers
             };
         }
         public IActionResult RegisterSchool() => View();
+
+
         [HttpPost]
         public async Task<IActionResult> RegisterSchool(
             string schoolName, string address, string email,
@@ -90,6 +95,7 @@ namespace EduClockPlus.Controllers
             _context.Users.Add(adminUser);
             _context.SaveChanges();
 
+
             try
             {
                 string subject = $"Welcome to EduClockPlus, {schoolName}!";
@@ -104,13 +110,16 @@ namespace EduClockPlus.Controllers
 
                 await _emailservice.SendEmailAsync(adminEmail, subject, body);
             }
+
+
             catch (Exception ex)
             {
                 Console.WriteLine($"Email sending failed: {ex.Message}");
             }
             TempData["Success"] = "School registered successfully! Kindly Check your email for login details.";
-            return RedirectToAction("Login");
+            return RedirectToAction("Login"); 
         }
+        
         [HttpPost]
         public IActionResult Logout()
         {

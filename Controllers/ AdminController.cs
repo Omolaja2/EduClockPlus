@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
 
-
 namespace ClassClockPlus.Controllers
 {
     public class AdminController : Controller
@@ -39,9 +38,7 @@ namespace ClassClockPlus.Controllers
                 .ToList();
             ViewBag.Teachers = teachers;
             ViewBag.Parents = parents;
-
             return View();
-
         }
        
     }
