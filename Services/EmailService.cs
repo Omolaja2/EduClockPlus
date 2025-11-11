@@ -38,6 +38,7 @@ namespace EduClockPlus.Services
             }
         }
 
+
         public async Task SendEmailWithAttachmentAsync(string toEmail, string subject, string body, string attachmentPath)
         {
             var fromEmail = _config["EmailSettings:FromEmail"];

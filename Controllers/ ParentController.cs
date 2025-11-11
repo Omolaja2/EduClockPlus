@@ -62,7 +62,6 @@ namespace EduClockPlus.Controllers
             return View();
         }
 
-
         public IActionResult StudentDetails(Guid id)
         {
             var student = _context.Students
@@ -84,11 +83,13 @@ namespace EduClockPlus.Controllers
             return PartialView("_StudentDetailsPartial", student);
         }
 
+
         [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Add(string fullName, string email, string phone, string password)
@@ -129,7 +130,6 @@ namespace EduClockPlus.Controllers
             return RedirectToAction("Dashboard", "Admin");
         }
 
-
         [HttpPost]
         public async Task<IActionResult> SendFeedback(Guid teacherId, string message)
         {
@@ -148,7 +148,6 @@ namespace EduClockPlus.Controllers
                 "Parent Feedback",
                 message
             );
-
 
             TempData["Success"] = "Message sent successfully!";
             return RedirectToAction("Dashboard");

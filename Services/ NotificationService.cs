@@ -1,7 +1,7 @@
-using EduClockPlus.Services; // ✅ Make sure this matches your actual namespace
+using EduClockPlus.Services; 
 using System.Threading.Tasks;
 
-namespace EduClockPlus.Services // ❌ It was ClassClockPlus before — make sure it’s the same as the rest of your project
+namespace EduClockPlus.Services 
 {
     public class NotificationService
     {

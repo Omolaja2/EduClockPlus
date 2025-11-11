@@ -37,6 +37,8 @@ namespace EduClockPlus.Controllers
             ViewBag.Students = students;
             return View();
         }  
+
+
         [HttpPost]
         public async Task<IActionResult> Mark(Guid studentId, bool isPresent)
         {
@@ -71,6 +73,7 @@ namespace EduClockPlus.Controllers
             await _emailService.SendEmailAsync(student.Parent.User.Email, "Attendance Notification", message);
 
             TempData["Success"] = $"{student.FullName}'s attendance recorded and parent notified.";
+            
             return RedirectToAction("Index");
         }
     }

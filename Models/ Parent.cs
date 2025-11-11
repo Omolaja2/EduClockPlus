@@ -13,3 +13,5 @@ namespace ClassClockPlus.Models
         public ICollection<Notification>? Notifications { get; set; }
     }
 }
+
+

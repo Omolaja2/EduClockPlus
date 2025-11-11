@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
 using ClassClockPlus.Models;
 using EduClockPlus.Services;
-using System.ComponentModel.DataAnnotations;
 
 namespace EduClockPlus.Controllers
 {
@@ -46,6 +45,7 @@ namespace EduClockPlus.Controllers
 
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> SaveStudent(IFormFile? imageFile, string studentName, string gender, Guid parentId)

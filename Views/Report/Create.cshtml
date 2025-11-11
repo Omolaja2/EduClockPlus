@@ -3,6 +3,7 @@
     var students = ViewBag.Students as List<ClassClockPlus.Models.Student>;
 }
 
+
 <div class="container py-5">
     <h3 class="mb-4 text-primary fw-bold">Create Report Card</h3>
 
@@ -15,7 +16,6 @@
                 {
                     <option value="@s.StudentID">@s.FullName</option>
                 }
-            
             </select>
         </div>
 
@@ -46,6 +46,7 @@
         <button type="submit" class="btn btn-primary w-100">Save & Send Report</button>
     </form>
 </div>
+ 
 
 <script>
     document.getElementById('addSubject').addEventListener('click', () => {

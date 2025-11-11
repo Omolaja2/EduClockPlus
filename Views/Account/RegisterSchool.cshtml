@@ -2,20 +2,20 @@
     ViewData["Title"] = "Register School - EduClockPlus";
 }
 
-
 <div class="d-flex align-items-center justify-content-center vh-100 bg-light">
     <div class="card shadow-lg p-4" style="max-width: 600px; width: 100%;">
         <div class="text-center mb-4">
             <h3 class="fw-bold text-primary">Register Your School</h3>
             <p class="text-muted">Create a new school account for EduClockPlus</p>
         </div>
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-        <strong>@TempData["Success"]</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                        <strong>@TempData["Success"]</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
 
         <form asp-action="RegisterSchool" method="post">
             <div class="mb-3">
