@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using EduClockPlus.Models.DB;
 using ClassClockPlus.Models;
 using EduClockPlus.Services;
-using System.ComponentModel.DataAnnotations;
 
 namespace EduClockPlus.Controllers
 {
@@ -46,6 +45,7 @@ namespace EduClockPlus.Controllers
 
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> SaveStudent(IFormFile? imageFile, string studentName, string gender, Guid parentId)
@@ -107,7 +107,6 @@ namespace EduClockPlus.Controllers
                     $"✅ {student.FullName} Clocked In",
                     $"{student.FullName} clocked in at {student.ClockInTime:hh:mm tt}.");
 
-                // Store attendance as Present when clocked in
                 _context.Attendance.Add(new Attendance
                 {
                     AttendanceID = Guid.NewGuid(),
@@ -183,7 +182,7 @@ namespace EduClockPlus.Controllers
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "Student removed successfully." });
+            return Json(new { success = true, message = "Student removed successfully!." });
         }
 
         [HttpGet]
@@ -259,11 +258,34 @@ namespace EduClockPlus.Controllers
             _context.Teachers.Add(teacher);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Teacher added successfully!";
+            string loginLink = $"{Request.Scheme}://{Request.Host}/Account/Login";
+            string body = $@"
+            <div style='font-family:Poppins,Arial,sans-serif;background-color:#f9fbfd;padding:25px;border-radius:10px;'>
+                <h2 style='color:#007bff;'>Welcome to EduClockPlus 🎓</h2>
+                <p>Dear <strong>{fullName}</strong>,</p>
+                <p>Your teacher account has been successfully created! . Below are your login details:</p>
+                <div style='background:#eaf3ff;padding:10px 15px;border-radius:8px;margin-top:10px;'>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Password:</strong> {password}</p>
+                </div>
+                <p style='margin-top:15px;'>You can now log in to your dashboard using the link below:</p>
+                <p><a href='{loginLink}' style='color:white;background-color:#007bff;padding:10px 20px;border-radius:6px;text-decoration:none;'>Login to Portal</a></p>
+                <p style='margin-top:25px;color:#555;'>Best regards,<br/><strong>The EduClockPlus Team</strong></p>
+            </div>";
 
+            await _emailService.SendEmailAsync(email, "Your EduClockPlus Account Details", body);
+
+            TempData["Success"] = "Teacher added successfully and email sent!";
             return RedirectToAction("Add");
         }
     }
+
+
+
+
+
+
+
 
     public class ClockDto
     {

@@ -10,6 +10,7 @@ using iText.IO.Font.Constants;
 using iText.Kernel.Font;
 using iText.Layout.Properties;
 
+
 namespace EduClockPlus.Controllers
 {
     public class ReportController : Controller
@@ -22,8 +23,9 @@ namespace EduClockPlus.Controllers
         {
             _context = context;
             _emailService = emailService;
-            _env = env;
+            _env = env;    
         }
+
 
         [HttpGet]
         public IActionResult Create()
@@ -31,6 +33,7 @@ namespace EduClockPlus.Controllers
             ViewBag.Students = _context.Students.Include(s => s.Parent).ThenInclude(p => p.User).ToList();
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Create(Guid studentId, string term, string comments, List<string> subjects, List<int> scores)
@@ -50,6 +53,7 @@ namespace EduClockPlus.Controllers
                 Comments = comments,
                 UploadDate = DateTime.Now
             };
+
 
             _context.ReportCards.Add(report);
             await _context.SaveChangesAsync();
@@ -80,9 +84,9 @@ namespace EduClockPlus.Controllers
                     pdfPath
                 );
             }
-
             return Json(new { success = true, message = "Report card generated and sent to parent." });
         }
+
 
         private string GetGrade(int score)
         {
@@ -92,17 +96,26 @@ namespace EduClockPlus.Controllers
             if (score >= 40) return "D";
             return "F";
         }
+        
+
         private async Task<string> GenerateReportPDF(ReportCard report, Student student)
         {
-            var subjects = await _context.ReportSubjects.Where(r => r.ReportID == report.ReportID).ToListAsync();
+            var subjects = await _context.ReportSubjects
+                .Where(r => r.ReportID == report.ReportID)
+                .ToListAsync();
+
             var reportsDir = Path.Combine(_env.WebRootPath, "reports");
             Directory.CreateDirectory(reportsDir);
 
-            string filePath = Path.Combine(reportsDir, $"{student.FullName}_{report.Term}.pdf");
+            string safeName = string.Concat(student.FullName.Split(Path.GetInvalidFileNameChars()));
+            string filePath = Path.Combine(reportsDir, $"{safeName}_{report.Term}.pdf");
 
-            using (var writer = new PdfWriter(filePath))
+            var writerProps = new WriterProperties();
+            using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+            using (var writer = new PdfWriter(stream, writerProps))
             using (var pdf = new PdfDocument(writer))
             using (var doc = new Document(pdf))
+
             {
                 var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
                 var normalFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
@@ -116,7 +129,6 @@ namespace EduClockPlus.Controllers
                 doc.Add(new Paragraph($"Date: {DateTime.Now:MMMM dd, yyyy}").SetFont(normalFont));
                 doc.Add(new Paragraph(" "));
 
-                // Table
                 var table = new Table(3).UseAllAvailableWidth();
                 table.AddHeaderCell(new Cell().Add(new Paragraph("Subject").SetFont(boldFont)));
                 table.AddHeaderCell(new Cell().Add(new Paragraph("Score").SetFont(boldFont)));
@@ -134,8 +146,12 @@ namespace EduClockPlus.Controllers
                 doc.Add(new Paragraph($"Teacher Comments: {report.Comments ?? "N/A"}").SetFont(normalFont));
             }
 
-            return  filePath;
-        }
+            if (!System.IO.File.Exists(filePath))
+                throw new Exception($"Report file not found after generation: {filePath}");
 
+            Console.WriteLine($"✅ PDF successfully generated at: {filePath}");
+            return filePath;
+
+        }
     }
 }

@@ -6,11 +6,11 @@ namespace EduClockPlus.Services
     public class EmailService
     {
         private readonly IConfiguration _config;
-
         public EmailService(IConfiguration config)
         {
             _config = config;
         }
+
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
@@ -64,7 +64,6 @@ namespace EduClockPlus.Services
                 {
                     message.Attachments.Add(new Attachment(attachmentPath));
                 }
-
                 await smtp.SendMailAsync(message);
             }
         }

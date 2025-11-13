@@ -15,7 +15,10 @@ namespace EduClockPlus.Controllers
             _context = context;
             _emailService = emailService;
         }
+
+
         public IActionResult Dashboard()
+
         {
             var email = HttpContext.Session.GetString("UserEmail");
             if (string.IsNullOrEmpty(email))
@@ -62,7 +65,6 @@ namespace EduClockPlus.Controllers
             return View();
         }
 
-
         public IActionResult StudentDetails(Guid id)
         {
             var student = _context.Students
@@ -93,20 +95,13 @@ namespace EduClockPlus.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(string fullName, string email, string phone, string password)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == email))
-            {
-                ViewBag.Error = "A user with this email already exists.";
-                return View();
-            }
-
             var user = new User
             {
-
                 UserID = Guid.NewGuid(),
                 FullName = fullName,
                 Email = email,
                 PasswordHash = password,
-                Role = "Parent",
+                Role = "Parent"
             };
 
             var parent = new Parent
@@ -119,13 +114,24 @@ namespace EduClockPlus.Controllers
             _context.Parents.Add(parent);
             await _context.SaveChangesAsync();
 
-            await _emailService.SendEmailAsync(
-                email,
-                $"Welcome! Dear Parent",
-                $"Hello {fullName}, your parent account has been created successfully!"
-            );
+            string loginLink = $"{Request.Scheme}://{Request.Host}/Account/Login";
+            string body = $@"
+            <div style='font-family:Poppins,Arial,sans-serif;background-color:#f9fbfd;padding:25px;border-radius:10px;'>
+                <h2 style='color:#007bff;'>Welcome to EduClockPlus 🎓</h2>
+                <p>Dear <strong>{fullName}</strong>,</p>
+                <p>Your parent account has been created successfully! Here are your login credentials:</p>
+                <div style='background:#eaf3ff;padding:10px 15px;border-radius:8px;margin-top:10px;'>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Password:</strong> {password}</p>
+                </div>
+                <p style='margin-top:15px;'>Click below to access your Parent Dashboard:</p>
+                <p><a href='{loginLink}' style='color:white;background-color:#007bff;padding:10px 20px;border-radius:6px;text-decoration:none;'>Login to Portal</a></p>
+                <p style='margin-top:25px;color:#555;'>Best regards,<br/><strong>The EduClockPlus Team</strong></p>
+            </div>";
 
-            TempData["Success"] = "Parent added successfully!";
+            await _emailService.SendEmailAsync(email, "Your EduClockPlus Account Details", body);
+
+            TempData["Success"] = "Parent added successfully and email sent!";
             return RedirectToAction("Dashboard", "Admin");
         }
 
@@ -149,9 +155,9 @@ namespace EduClockPlus.Controllers
                 message
             );
 
-
             TempData["Success"] = "Message sent successfully!";
             return RedirectToAction("Dashboard");
+
         }
     }
 }

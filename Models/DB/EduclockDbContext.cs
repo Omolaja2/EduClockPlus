@@ -1,6 +1,7 @@
 using ClassClockPlus.Models;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace EduClockPlus.Models.DB
 {
     public class EduclockDbContext : DbContext
@@ -16,6 +17,5 @@ namespace EduClockPlus.Models.DB
         public DbSet<School> Schools { get; set; }
         public DbSet<User> User { get; set; }
         public DbSet<ReportSubject> ReportSubjects { get; set; }
-
     }
 }
