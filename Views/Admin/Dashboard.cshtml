@@ -32,7 +32,6 @@
         margin: 0 auto;
     }
 
-    /* Header Section */
     .dashboard-header {
         background: white;
         border-radius: 20px;
@@ -75,7 +74,7 @@
         gap: 1.5rem;
     }
 
-    /* Buttons */
+    
     .btn-modern {
         border-radius: 12px;
         padding: 0.75rem 1.5rem;
@@ -129,7 +128,7 @@
         color: white;
     }
 
-    /* Action Buttons Container */
+    
     .action-buttons {
         display: flex;
         gap: 1rem;
@@ -137,7 +136,6 @@
         margin-bottom: 2rem;
     }
 
-    /* Table Card */
     .table-card {
         background: white;
         border-radius: 20px;
@@ -176,7 +174,6 @@
         border-radius: 2px;
     }
 
-    /* Modern Table */
     .table-modern {
         width: 100%;
         border-collapse: separate;
@@ -225,12 +222,10 @@
         vertical-align: middle;
     }
 
-    /* Success Table Variant */
     .table-modern.table-success thead th {
         background: linear-gradient(135deg, var(--success-green) 0%, #34d399 100%);
     }
 
-    /* Badges */
     .badge-modern {
         padding: 0.4rem 0.875rem;
         border-radius: 8px;
@@ -248,8 +243,6 @@
         background: #e2e8f0;
         color: #475569;
     }
-
-    /* Empty State */
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
@@ -271,7 +264,6 @@
         padding: 1rem;
     }
 
-    /* Responsive Design */
     @@media (max-width: 768px) {
         .dashboard-container {
             padding: 1rem 0.75rem;
@@ -324,7 +316,6 @@
             padding: 0.75rem 0.875rem;
         }
 
-        /* Make table scrollable on mobile */
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -351,7 +342,6 @@
         }
     }
 
-    /* Divider */
     .divider {
         height: 2px;
         background: linear-gradient(90deg, transparent 0%, var(--border-color) 50%, transparent 100%);
@@ -384,6 +374,9 @@
         <a href="/Parent/Add" class="btn-modern btn-success-modern">
             <i class="bi bi-people-fill"></i>+ Add Parent
         </a>
+        <a href="/Admin/SchoolReport" class="btn-modern btn-primary-modern">
+    <i class="bi bi-graph-up"></i> View School Report
+</a>
     </div>
 
     <hr class="divider" />
@@ -430,7 +423,7 @@
             </div>
         }
     </div>
-    
+
 
     <div class="table-card">
         <h4 class="table-card-title">Registered Parents</h4>

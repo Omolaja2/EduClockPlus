@@ -13,7 +13,9 @@ namespace ClassClockPlus.Models
         public Teacher? Teacher { get; set; }
         public DateTime Date { get; set; }
         public string Status { get; set; } = default!;
+        public int SchoolId { get; set; }
+        public School? School { get; set; }
         [MaxLength(100)]
-        public string StudentName { get; set; } = string.Empty;                     
+        public string StudentName { get; set; } = string.Empty;
     }
 }

@@ -16,7 +16,6 @@ namespace EduClockPlus.Services
         {
             string subject = $"Attendance Alert: {studentName}";
             string body = $"Hello, your child <b>{studentName}</b> has been <b>{status}</b> by <b>{teacherName}</b>.";
-
             await _emailService.SendEmailAsync(parentEmail, subject, body);
         }
     }

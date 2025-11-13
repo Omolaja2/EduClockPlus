@@ -10,6 +10,7 @@ using iText.IO.Font.Constants;
 using iText.Kernel.Font;
 using iText.Layout.Properties;
 
+
 namespace EduClockPlus.Controllers
 {
     public class ReportController : Controller
@@ -22,8 +23,9 @@ namespace EduClockPlus.Controllers
         {
             _context = context;
             _emailService = emailService;
-            _env = env;
+            _env = env;    
         }
+
 
         [HttpGet]
         public IActionResult Create()
@@ -31,6 +33,7 @@ namespace EduClockPlus.Controllers
             ViewBag.Students = _context.Students.Include(s => s.Parent).ThenInclude(p => p.User).ToList();
             return View();
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Create(Guid studentId, string term, string comments, List<string> subjects, List<int> scores)
@@ -50,6 +53,7 @@ namespace EduClockPlus.Controllers
                 Comments = comments,
                 UploadDate = DateTime.Now
             };
+
 
             _context.ReportCards.Add(report);
             await _context.SaveChangesAsync();
@@ -80,9 +84,7 @@ namespace EduClockPlus.Controllers
                     pdfPath
                 );
             }
-
             return Json(new { success = true, message = "Report card generated and sent to parent." });
-            
         }
 
 
@@ -94,6 +96,7 @@ namespace EduClockPlus.Controllers
             if (score >= 40) return "D";
             return "F";
         }
+        
 
         private async Task<string> GenerateReportPDF(ReportCard report, Student student)
         {
@@ -112,7 +115,7 @@ namespace EduClockPlus.Controllers
             using (var writer = new PdfWriter(stream, writerProps))
             using (var pdf = new PdfDocument(writer))
             using (var doc = new Document(pdf))
-            
+
             {
                 var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
                 var normalFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
@@ -142,7 +145,6 @@ namespace EduClockPlus.Controllers
                 doc.Add(new Paragraph(" "));
                 doc.Add(new Paragraph($"Teacher Comments: {report.Comments ?? "N/A"}").SetFont(normalFont));
             }
-
 
             if (!System.IO.File.Exists(filePath))
                 throw new Exception($"Report file not found after generation: {filePath}");

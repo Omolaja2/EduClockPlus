@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EduClockPlus.Models;
 
 namespace ClassClockPlus.Models
 {
@@ -12,5 +13,8 @@ namespace ClassClockPlus.Models
         public string? FilePath { get; set; }
         public string? Comments { get; set; }
         public DateTime UploadDate { get; set; }
+        public int SchoolId { get; set; }
+        public School? School { get; set; }
+
     }
 }

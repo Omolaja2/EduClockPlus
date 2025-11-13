@@ -36,6 +36,7 @@
                         <td>@student.Parent?.User?.FullName</td>
                         <td>
                             <select class="form-select attendance-select" data-id="@student.StudentID">
+                            
                             <option value="Present" selected="@(status == "Present" ? "selected" : null)">Present</option>
                             <option value="Absent" selected="@(status == "Absent" ? "selected" : null)">Absent</option>
                             <option value="Late" selected="@(status == "Late" ? "selected" : null)">Late</option>

@@ -7,10 +7,8 @@ namespace ClassClockPlus.Models
     {
         [Key]
         public Guid UserID { get; set; }
-
         [Required]
         public string FullName { get; set; } = default!;
-
         [Required]
         public string Email { get; set; } = default!;
         [Required]

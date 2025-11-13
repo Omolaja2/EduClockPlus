@@ -41,7 +41,7 @@
 
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-light fw-semibold">
-            ➕ Add New Student
+            + Add New Student
         </div>
         <div class="card-body">
             <form id="studentForm" enctype="multipart/form-data">
@@ -73,7 +73,7 @@
                         <input type="file" name="imageFile" class="form-control" />
                     </div>
                     <div class="col-md-1 d-grid">
-                        <button type="submit" class="btn btn-primary">Add</button>
+                        <button type="submit" class="btn btn-primary">+ Add</button>
                     </div>
                 </div>
             </form>
@@ -82,7 +82,7 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-light fw-semibold">
-            👩‍🎓 Student List
+            Student List
         </div>
         <div class="card-body table-responsive">
             <table class="table table-hover align-middle" id="studentsTable">
@@ -136,7 +136,7 @@
     </div>
 </div>
 
-<!-- Student details modal -->
+
 <div class="modal fade" id="studentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -149,7 +149,7 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
+
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow">
@@ -168,7 +168,9 @@
   </div>
 </div>
 
-<!-- Toast container (hidden initially) -->
+
+
+
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
     <div id="appToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">

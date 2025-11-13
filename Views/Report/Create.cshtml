@@ -3,11 +3,17 @@
     var students = ViewBag.Students as List<ClassClockPlus.Models.Student>;
 }
 
+<div class="container py-5">
+    <div class="d-flex justify-content-between mb-4">
+        <a asp-controller="Teacher" asp-action="Dashboard" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> < Back
+        </a>
+    </div>
 
 <div class="container py-5">
     <h3 class="mb-4 text-primary fw-bold">Create Report Card</h3>
 
-    <form asp-action="Create" method="post">
+    <form id="reportForm">
         <div class="mb-3">
             <label>Student</label>
             <select name="studentId" class="form-select" required>
@@ -43,10 +49,14 @@
             <textarea name="comments" class="form-control" rows="3"></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Save & Send Report</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary w-100">
+            <span id="btnText">Save & Send Report</span>
+            <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
+        </button>
     </form>
 </div>
- 
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.getElementById('addSubject').addEventListener('click', () => {
@@ -58,5 +68,54 @@
             <input type="number" name="scores" placeholder="Score" class="form-control" required />
         `;
         container.appendChild(div);
+    });
+
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const btn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        btn.disabled = true;
+        btnText.textContent = "Sending...";
+        btnSpinner.classList.remove('d-none');
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('@Url.Action("Create", "Report")', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Report Sent!',
+                    text: result.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                form.reset();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'Something went wrong!'
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: 'Failed to send report. Please try again.'
+            });
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = "Save & Send Report";
+            btnSpinner.classList.add('d-none');
+        }
     });
 </script>

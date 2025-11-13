@@ -1,0 +1,178 @@
+@using System.Text.Json
+@{
+    ViewData["Title"] = "School Report";
+    var studentsByClass = ViewBag.StudentsByClass as List<dynamic> ?? new List<dynamic>();
+    var teachersByClass = ViewBag.TeachersByClass as List<dynamic> ?? new List<dynamic>();
+    var parents = ViewBag.Parents as List<dynamic> ?? new List<dynamic>();
+}
+
+<div class="dashboard-container container py-4">
+    <div class="dashboard-header text-center mb-4">
+        <h2 class="dashboard-title fw-bold text-primary">📊 School Overview Report</h2>
+        <p class="dashboard-subtitle text-muted">Comprehensive summary of your school’s data and performance insights</p>
+    </div>
+
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-2 col-6"><div class="btn-modern btn-primary-modern w-100 shadow-sm">Teachers<br/><strong>@ViewBag.TotalTeachers</strong></div></div>
+        <div class="col-md-2 col-6"><div class="btn-modern btn-success-modern w-100 shadow-sm">Students<br/><strong>@ViewBag.TotalStudents</strong></div></div>
+        <div class="col-md-2 col-6"><div class="btn-modern btn-secondary-modern w-100 shadow-sm">Parents<br/><strong>@ViewBag.TotalParents</strong></div></div>
+        <div class="col-md-2 col-6"><div class="btn-modern btn-warning-modern w-100 shadow-sm">Classes<br/><strong>@ViewBag.TotalClasses</strong></div></div>
+        <div class="col-md-3 col-12"><div class="btn-modern btn-info-modern w-100 shadow-sm">Attendance<br/><strong>@ViewBag.AttendancePercent%</strong></div></div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="table-card card p-3 mb-4 border-0 shadow-sm">
+        <h4 class="table-card-title text-primary"><i class="bi bi-people-fill me-2"></i>Students by Class</h4>
+        @if (studentsByClass.Any())
+        {
+            <table class="table table-hover table-borderless align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Class</th>
+                        <th>Total Students</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cls in studentsByClass)
+                    {
+                        <tr>
+                            <td>@cls.ClassName</td>
+                            <td>@cls.StudentCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">No student data available.</p>
+        }
+
+
+    </div>
+
+    <div class="table-card card p-3 mb-4 border-0 shadow-sm">
+        <h4 class="table-card-title text-primary"><i class="bi bi-person-workspace me-2"></i>Teachers by Class</h4>
+        @if (teachersByClass.Any())
+        {
+            @foreach (var group in teachersByClass)
+            {
+                <div class="bg-light rounded-3 p-3 mb-3">
+                    <h5 class="fw-bold text-secondary mb-3">@group.ClassName</h5>
+                    <table class="table table-sm table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Teacher</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Students</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in group.Teachers)
+                            {
+                                <tr>
+                                    <td>@t.FullName</td>
+                                    <td>@t.Email</td>
+                                    <td>@t.Subject</td>
+                                    <td>@t.StudentCount</td>
+                                    <td><span class="badge bg-info text-dark">@t.Role</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+        
+        else
+        {
+            <p class="text-muted">No teacher data available.</p>
+        }
+    </div>
+
+    <div class="table-card card p-3 mb-4 border-0 shadow-sm">
+        <h4 class="table-card-title text-primary"><i class="bi bi-people me-2"></i>Registered Parents</h4>
+        @if (parents.Any())
+        {
+            <table class="table table-hover table-borderless align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in parents)
+                    {
+                        <tr>
+                            <td>@p.FullName</td>
+                            <td>@p.Email</td>
+                            <td><span class="badge bg-secondary">@p.Role</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">No parents registered.</p>
+        }
+    </div>
+
+
+    <div class="card p-4 border-0 shadow-sm mb-4">
+        <h4 class="table-card-title text-primary"><i class="bi bi-bar-chart-line me-2"></i>School Data Visualization</h4>
+        <canvas id="schoolChart" height="150"></canvas>
+    </div>
+
+    <div class="dashboard-footer text-center text-muted mt-4">
+        <small>© 2025 EduClockPlus — Smart School Analytics Portal</small>
+    </div>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+    const chartLabels = @Html.Raw(JsonSerializer.Serialize(studentsByClass.Select(x => x.ClassName)));
+    const chartData = @Html.Raw(JsonSerializer.Serialize(studentsByClass.Select(x => x.StudentCount)));
+
+    new Chart(document.getElementById("schoolChart"), {
+        type: "bar",
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: "Students per Class",
+                data: chartData,
+                borderWidth: 2,
+                backgroundColor: "rgba(37, 99, 235, 0.6)",
+                borderColor: "rgba(37, 99, 235, 1)",
+                hoverBackgroundColor: "rgba(30, 64, 175, 0.7)"
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } },
+            plugins: {
+                legend: { display: true, position: "top" },
+                title: { display: true, text: "Class Distribution Overview", font: { size: 16 } }
+            }
+        }
+    });
+</script>
+
+<style>
+    .dashboard-title { font-size: 1.8rem; }
+    .btn-modern { padding: 0.7rem; border-radius: 12px; font-weight: 600; color: #fff; }
+    .btn-primary-modern { background-color: #2563eb; }
+    .btn-success-modern { background-color: #16a34a; }
+    .btn-secondary-modern { background-color: #64748b; }
+    .btn-warning-modern { background-color: #facc15; color: #000; }
+    .btn-info-modern { background-color: #0ea5e9; }
+    .table-card-title { margin-bottom: 1rem; font-weight: 700; }
+    .divider { border: none; border-top: 2px solid #e2e8f0; margin: 1.5rem 0; }
+</style>
