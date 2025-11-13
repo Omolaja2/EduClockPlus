@@ -74,7 +74,6 @@ namespace ClassClockPlus.Controllers
                 ? (presentRecords * 100 / totalAttendanceRecords)
                 : 0;
 
-    
             var studentsByClass = _context.Teachers
                 .Include(t => t.Students)
                 .Where(t => t.SchoolId == schoolId && t.ClassName != null)
@@ -87,6 +86,7 @@ namespace ClassClockPlus.Controllers
                 })
                 .OrderBy(g => g.ClassName)
                 .ToList();
+
 
             var teachersByClass = _context.Teachers
                 .Include(t => t.User)
@@ -129,7 +129,7 @@ namespace ClassClockPlus.Controllers
             ViewBag.StudentsByClass = studentsByClass;
             ViewBag.TeachersByClass = teachersByClass;
             ViewBag.Parents = parents;
-            
+
             return View();
         }
     }
